@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.Scanner;
 
 // clamscan C:\\Users\\chemi\\Downloads\\Arcade - Street Fighter III 3rd Strike - Sound Effects
 
