@@ -9,5 +9,4 @@ RMwhitelist.java and addToWhitelist.java must be executed in admin mode
 
 -errors to fix: 
 --CustomScan.txt needs to be wiped when finished scanning
-In hindsight I should have put them in one folder.
 --RmWhitelist.java needs to remove the directories from whitelist.txt, and hitlist.txt needs to wipe after program finishes 
