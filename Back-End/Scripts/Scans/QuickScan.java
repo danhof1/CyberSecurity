@@ -1,22 +1,36 @@
 import java.io.*;
-
-// clamscan C:\\Users\\chemi\\Downloads\\Arcade - Street Fighter III 3rd Strike - Sound Effects
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class QuickScan {
-    public static void  main(String[] args) throws IOException, InterruptedException {
-        // test one 
-    	BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Daniel\\eclipse-workspace\\Rat_Trap\\src\\QuickScan.txt"));
-    	String line= ""; 
-    	while((line = reader.readLine()) != null) {
-    		System.out.println(line); 
-    		Process proc = Runtime.getRuntime().exec("C:\\Program Files/ClamAV/clamscan.exe --recursive " + line);
-    		BufferedReader reader2= new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line2 = "";
-            while((line2 = reader2.readLine()) != null) {
-                System.out.print(line2 + "\n");
-            }
-            proc.waitFor();  
-        }
-       reader.close();
+    private ArrayList<String> quickArray;
+
+    public QuickScan() {
+        quickArray = new ArrayList<String>(Arrays.asList(
+            "C:\\Windows\\System32",
+            "C:\\Windows\\SysWOW64",
+            "C:\\Users\\<username>\\AppData\\Local\\Temp",
+            "C:\\Users\\<username>\\AppData\\Roaming",
+            "C:\\Program Files",
+            "C:\\Program Files (x86)",
+            "C:\\Users\\<username>\\Downloads",
+            "C:\\Users\\<username>\\Desktop",
+            "C:\\Users\\<username>\\Documents",
+            "C:\\Users\\<username>\\Pictures",
+            "C:\\Users\\<username>\\Music",
+            "C:\\Users\\<username>\\Videos",
+            "C:\\Users\\<username>\\Favorites",
+            "C:\\Users\\<username>\\Contacts",
+            "C:\\Users\\<username>\\Links",
+            "C:\\Users\\<username>\\Searches",
+            "C:\\Users\\<username>\\Saved Games",
+            "C:\\Users\\<username>\\OneDrive"
+        ));
+    }
+
+    public void scanFiles() throws IOException, InterruptedException {
+        Scan myScan = new Scan();
+        myScan.addArray(quickArray);
+        myScan.Scanner();
     }
 }
