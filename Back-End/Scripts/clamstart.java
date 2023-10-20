@@ -1,4 +1,3 @@
-package openClamd;
 import java.io.*;
 
 // start up clamd
