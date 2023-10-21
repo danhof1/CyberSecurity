@@ -1,4 +1,0 @@
-C:\Users\Daniel\OneDrive\Documents\Pong2.0
-C:\Users\Daniel\OneDrive\Documents\Visual Studio 2022
-C:\Users\Daniel\OneDrive\Documents\Voicemeeter
-C:\Users\Daniel\OneDrive\Documents\WindowsPowerShell
