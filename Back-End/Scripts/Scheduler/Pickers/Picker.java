@@ -85,7 +85,7 @@ public class Picker {
          lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
          panel.add(lbl);
 
-         String[] recurrences = { "Quick", "Full", "Targeted"};
+         String[] recurrences = { "Quick", "Full", "Targeted","Backup"};
          JComboBox<String> rComboBox = new JComboBox<>(recurrences);
 
          rComboBox.setMaximumSize(rComboBox.getPreferredSize());

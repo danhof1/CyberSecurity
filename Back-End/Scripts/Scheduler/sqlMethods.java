@@ -12,12 +12,12 @@ public class sqlMethods {
 	        Class.forName("org.sqlite.JDBC");
 	        Connection connection = DriverManager.getConnection(jdbcURL);
 	        
-	        String sql = "INSERT INTO Schedule (Date_time, Activity, Recurrence) VALUES (?, ?, ?)";
+	        String sql = "INSERT INTO Schedule (date_time, activity, recurrence) VALUES (?, ?, ?)";
 	        
 	        PreparedStatement statement = connection.prepareStatement(sql);
-	        statement.setString(1, Date_time);
-	        statement.setString(2, Activity);
-	        statement.setString(3, Recurrence);
+	        statement.setString(2, Date_time);
+	        statement.setString(3, Activity);
+	        statement.setString(1, Recurrence);
 
 	        statement.executeUpdate();
 	        
