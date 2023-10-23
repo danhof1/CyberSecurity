@@ -1,11 +1,13 @@
 import java.io.IOException;
-import java.util.ArrayList;
 
-public class MainClass {
-    public static void main(String[] args) throws IOException, InterruptedException {
-        int n = 7;
+public class actionBranch {
+	public void actionMethod(int n) throws IOException, InterruptedException {
         switch (n) {
-            case 1:
+	        case 0:
+	        	clamstart clam = new clamstart();
+	        	clam.startClam();
+	        	break;
+        	case 1:
                 QuickScan quick = new QuickScan();
                 quick.scanFiles();
                 break;
@@ -34,5 +36,5 @@ public class MainClass {
             	time.addToScheulde();
             	time.viewSchedule();
         }
-    }
+	}
 }
