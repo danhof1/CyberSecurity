@@ -8,5 +8,5 @@ Select Directories/CustomScan works like this:
 RMwhitelist.java and addToWhitelist.java must be executed in admin mode
 
 -errors to fix: 
---CustomScan.txt needs to be wiped when finished scanning
---RmWhitelist.java needs to remove the directories from whitelist.txt, and hitlist.txt needs to wipe after program finishes 
+	the add feature sometimes gives you the wrong date when scheduling
+	

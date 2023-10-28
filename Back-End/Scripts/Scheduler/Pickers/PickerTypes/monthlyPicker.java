@@ -38,7 +38,7 @@ public class monthlyPicker {
                 calendar.add(Calendar.DATE, daysInMonth);
             }
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss");
             selectedDateTime.append(dateFormat.format(calendar.getTime()));
         });
 

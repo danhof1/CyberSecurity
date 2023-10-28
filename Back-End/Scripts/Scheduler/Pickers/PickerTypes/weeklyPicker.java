@@ -32,7 +32,7 @@ public class weeklyPicker {
             calendar.set(Calendar.HOUR_OF_DAY, getHour(selectedTime));
             calendar.set(Calendar.MINUTE, getMinute(selectedTime));
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss");
             selectedDateTime.append(dateFormat.format(calendar.getTime()));
         });
 

@@ -24,7 +24,7 @@ public class dailyPicker {
         confirmButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Date selectedTimeDate = (Date) spinner.getValue();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss");
                 selectedTime.append(dateFormat.format(selectedTimeDate)); // Update the selected time
             }
         });
