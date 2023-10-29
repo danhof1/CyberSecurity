@@ -1,5 +1,5 @@
-import java.io.IOException;
-import java.util.ArrayList;
+import java.net.*;
+import java.io.*;
 /*
  * Legend:
  * Scan Items
@@ -23,11 +23,25 @@ import java.util.ArrayList;
  * 	 * 13-Log Scan Results
  * 
  * */
+
+
 public class MainClass {
-    public static void main(String[] args) throws IOException, InterruptedException {   
-    	//Need to create some wait loop so action branch can 
-    	//continously take in commands from the front-end
+    public static void main(String[] args) throws IOException, InterruptedException {
+        /*ServerSocket serverSocket = new ServerSocket(9999); // Choose a port
+        System.out.println("Server is running and waiting for connections...");
+
+        while (true) {
+            Socket socket = serverSocket.accept(); // Wait for a connection
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            int actionNumber = Integer.parseInt(in.readLine());
+            
+            actionBranch action = new actionBranch();
+            action.actionMethod(actionNumber);
+            
+            socket.close(); // Close the connection after processing
+        }*/
     	actionBranch action = new actionBranch();
         action.actionMethod(11);
     }
 }
+
