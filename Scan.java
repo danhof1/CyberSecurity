@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import Frontend.eFXtend.Palette;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.effect.ImageInput;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 public class Scan 
@@ -16,9 +19,9 @@ public class Scan
 	
 	private int count;
 	private int rats;
-	private int total;	//scan bar denominator
-	private int current;	//scan bar numerator
-    private int ratio;
+	private long total;	//scan bar denominator
+	private long current;	//scan bar numerator
+    private double ratio;
 	
 	
 	private ArrayList<Process> procs;	
@@ -60,7 +63,6 @@ public class Scan
     	filesScanned = (Text)objects.get(3);
     	ratsFound = (Text)objects.get(4);
         //System.out.println("Constructor");
-
     }
 
 
@@ -82,13 +84,17 @@ public class Scan
     	curDir.setText("Starting Scan...");
     	scanPercent.setText("0%");
     	filesScanned.setText("0 Files Scanned");
-    	ratsFound.setText("0 Files Scanned");
-    	
+    	ratsFound.setText("0 Rats Found");
+		//prog.setProgress(0);
+		
+		if(filePaths.size() == 1)
+		{
+			total = CountFiles.dirSize(new File(filePaths.get(0)));
+		}
+		
     	//total = totalSize();
     	//System.out.println("Total size: " + total);
-    	 
-    	Random rand = new Random(); //temp
-    	
+    	     	
         for (int i = 0; i < filePaths.size(); i++) 
         {
         	//Prints to console
@@ -109,30 +115,26 @@ public class Scan
             		break;
             	}
             	
-            	
-            	/*TEMPORARY: DO NOT LEAVE IN
-            	 * This will change the string as if a threat is found for testing purposes
-            	 * ~Ashley
-            	 */
-            	
-            	if(rand.nextInt(10) == 0)
-            	{
-            		System.out.println("Simulating threat");
-            		line = line.replace("OK", "FOUND");
-            	}
-            	System.out.println(line);
-            	
-            	//END TEMP
-            	
                 String path = line.substring(0, line.lastIndexOf(':'));
                 
                 File temp = new File(path);
                 
-                System.out.println(path);
                 curDir.setText(path);	//Updates status text
                 
-                System.out.println(count);
                 count++;
+                
+        		if(filePaths.size() == 1)
+        		{
+        			ratio = (int)(((double)current / total)*100);
+        			current += temp.length();
+        	    	prog.setProgress((double)current/total);
+        	    	scanPercent.setText(ratio + "%");
+        	    	//System.out.println(ratio);
+
+        		}
+                
+                
+                //System.out.println(current +"/" + total);
                 filesScanned.setText(count + " Files Scanned");
                 
 
@@ -143,9 +145,6 @@ public class Scan
                 }
                 
                 	
-                //updates current (progress bar numerator) w/ previous file scanned
-            	//current += (new File(line).length());
-            	//System.out.println(current + "/" + total);
             }
                 
             if(!ScanManager.liveScan())
@@ -157,6 +156,52 @@ public class Scan
             //Waits until clamscan is done
             proc.waitFor();
             curDir.setText("Done!");
+            scanPercent.setText("100%");
+            prog.setProgress(1);
+            Text back = (Text)objects.get(5);
+            back.setText("Back");
+            
+            Text scanTitle = (Text)objects.get(6);
+            Rectangle ratGif = (Rectangle)objects.get(7);
+            String ratPath = ((ImageInput)ratGif.getEffect()).getSource().getUrl();
+            ratPath = ratPath.substring(0, ratPath.lastIndexOf('/')+1);
+            
+            if(rats == 0) //no threats
+            {
+            	scanTitle.setText("You're all good!");
+            	ratPath = ratPath + "cheese.jpg";
+            	
+            }
+            else //threats found
+            {
+            	scanTitle.setText(ratsFound.getText());
+            	ratPath = ratPath + "ratCage.png";
+
+            	
+            	for(int j = 8; j <= 9; j++)
+            	{
+            		Rectangle statusIcon = (Rectangle)objects.get(j);
+            		String statusPath = ((ImageInput)statusIcon.getEffect()).getSource().getUrl();
+            		
+            		if(statusPath.contains("Good"))
+            		{
+            			statusPath = statusPath.replace("Good", "Bad");
+                    	Palette.changeImg(statusIcon, statusPath);
+            		}
+            		
+            		else if(statusPath.contains("Ok"))
+            		{
+                		statusPath = statusPath.replace("Ok", "Bad");
+                    	Palette.changeImg(statusIcon, statusPath);
+            		}
+            		
+            		
+            		
+            	}
+            }
+            
+        	Palette.changeImg(ratGif, ratPath);
+
         }
     }
     
@@ -184,16 +229,9 @@ public class Scan
      * ~Ashley
      * @return total size of files being scanned
      */
-    private int totalSize()
+    
+    private void incProg()
     {
-    	int count = 0;
-    	for(int i = 0; i < filePaths.size(); i++)
-    	{
-    		File temp = new File(filePaths.get(i));
-    		count += temp.getTotalSpace();
-    	}
-    	
-    	return count;
     }
     
 }

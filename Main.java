@@ -188,7 +188,8 @@ public class Main extends Application
 	  String sampleText = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 	  
 	  String curPath = ("file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/");
-	  
+	  String statusIconPath = curPath + "statusGoodBig.PNG";
+
 	  //BACKEND STUFF
 	  //ScanManager scanMan = new ScanManager();
 	  
@@ -732,7 +733,7 @@ public class Main extends Application
 	  actionButtons.get(1).addAction(fileQuarentine);
 	  
 	  //Main Menu > Graphics > STATUS
-	  Rectangle statusIconBig = Menu.icon(barrier3 - barrier2 - buffer2*2, barrier3 - barrier2 - buffer2*2, barrier2 + buffer2, topBarrier + buffer2, curPath + "statusGoodBig.PNG");
+	  Rectangle statusIconBig = Menu.icon(barrier3 - barrier2 - buffer2*2, barrier3 - barrier2 - buffer2*2, barrier2 + buffer2, topBarrier + buffer2, statusIconPath);
 	  
 	  rootMM.getChildren().add(statusIconBig);
 	  Circle statusBtn = new Circle();
@@ -1000,7 +1001,8 @@ public class Main extends Application
 		  //2: scanPercent
 		  //3: filesScanned
 		  //4: ratsFound
-		  
+		  //5: cancelText
+		  //6: scanTitle
 		  
 		  Text scanTitle = new Text("ERR");
 		  scanTitle.setFont(curPalette.getTitle2Font());
@@ -1017,7 +1019,6 @@ public class Main extends Application
 		  curDir.setY(topBarrier + (int)(titleSize*3.5));
 		  rootSC.getChildren().add(curDir);
 		  scanStuff.add(curDir); //0
-
 		  
 		  //this is kinda a mess bc of buggy CSS stuff :(
 		  
@@ -1025,7 +1026,6 @@ public class Main extends Application
 		  ProgressBar prog = Menu.makeProgressBar((int)(sceneWidth*0.9), (int)(titleSize*1.5), (int)(sceneWidth*0.05), topBarrier + buffer*2, curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
 
 				  // ProgressBarX((int)(sceneWidth*0.9), titleSize, (int)(sceneWidth*0.05), topBarrier + buffer*2);
-		  prog.setProgress(0.25);
 		 
 		  
 		  /*prog.setPrefWidth((int)(sceneWidth*0.9));
@@ -1067,16 +1067,29 @@ public class Main extends Application
 		  rootSC.getChildren().add(ratsFound);
 		  scanStuff.add(ratsFound); //4
 		  
+		  scanStuff.add(cancelText); //5
+		  scanStuff.add(scanTitle); //6
+		  
+		  Rectangle statusIcon = Menu.icon((int)(iconSize*2), (int)(iconSize*2), (int)(sceneWidth/3 - iconSize*2)/2, topBarrier + buffer2, statusIconPath.replace("Big", "Small"));
+		  rootST.getChildren().add(statusIcon);
+		  
 		  //Will be ratscot gif
-		  //Rectangle ratGif = Menu.icon(200, 200, (sceneWidth - 200)/2, sceneHeight-210, curPath + "hamster-wheel.gif");
-		  //rootSC.getChildren().add(ratGif);
-		  		  
+		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "hamster-wheel.gif");
+		  rootSC.getChildren().add(ratGif);
+		  scanStuff.add(ratGif); //7		  
+		  scanStuff.add(statusIconBig); //8
+		  scanStuff.add(statusIcon); //9
+		  
+		  
 		  EventHandler<Event> deployScan = new EventHandler<Event>()
 		  {
 			    @Override  
 			    public void handle(Event event)
 			    {  
 			    	scanTitle.setText(scanBS.getValue());
+			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
+			    	prog.setProgress(0);
+			    	
 			        // Wrap the operation in a CompletableFuture
 			        CompletableFuture.runAsync(() -> 
 			        {
@@ -1111,19 +1124,32 @@ public class Main extends Application
 			                    e.printStackTrace();
 			                }
 			            }
-			            
+			            //Full scan
+			            else
+			            	try 
+		                {
+		                    ab.actionMethod(4);
+		                } 
+		            	catch (IOException | InterruptedException e)
+		            	{
+		                	System.out.println("ERROR");
+		                    e.printStackTrace();
+		                }
 			            
 			        });
 
 			        event.consume();
 			    }    
-			};
+		  };
 
 		  EventHandler<Event> toScanScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event)
 			  {  
+				  cancelText.setText("Cancel");
+				  
+				  
 				  if(scanDD.isOpen())
 					  scanDD.getButtonX().getActions().get(0).handle(event);
 				  
@@ -1174,10 +1200,10 @@ public class Main extends Application
 		  };  
 		  scanBtn.addAction(toScanScreen); 		  
 		  
-		  
-		  //scanBtn.addAction(deployScan);
-		  
+		  		  
 		  sc.addScene(scanScene, toScanScreen);
+		  
+		  
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ STATUS ~~~~~~~~~~~~~~~~~~~~~
 		  statusScene.setFill(curPalette.getBgColor());
@@ -1200,8 +1226,7 @@ public class Main extends Application
 		  backSTBtn.setOnMouseClicked(toMenuScreen);  
 		  rootST.getChildren().add(backSTBtn);
   
-		  Rectangle statusIcon = Menu.icon((int)(iconSize*2), (int)(iconSize*2), (int)(sceneWidth/3 - iconSize*2)/2, topBarrier + buffer2, curPath + "statusGoodSmall.PNG");
-		  rootST.getChildren().add(statusIcon);
+		  
 		  
 		  
 		  EventHandler<MouseEvent> toStatusScreen = new EventHandler<MouseEvent>() 
@@ -1212,7 +1237,7 @@ public class Main extends Application
 				  
 				  stage.setScene(statusScene);
 				  Menu.changeScene(rootST, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "statusGoodSmall.PNG", true);
+				  curPalette.changeImg(headerIcon, statusIconPath.replace("Big", "Small"), true);
 				  event.consume();
 		      }    
 		  };  

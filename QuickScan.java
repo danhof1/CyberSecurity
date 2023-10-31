@@ -19,7 +19,6 @@ public class QuickScan
     public QuickScan(ArrayList<Node> objs) 
     {
     	objects = objs;
-    	
     	username = System. getProperty("user.name");
         quickArray = new ArrayList<String>(Arrays.asList
         (
@@ -44,9 +43,11 @@ public class QuickScan
         ));
     }
 
-    public void scanFiles() throws IOException, InterruptedException {
+    public void scanFiles() throws IOException, InterruptedException 
+    {
         Scan myScan = new Scan(objects);
         myScan.addArray(quickArray);
+
         myScan.Scanner();
     }
 }

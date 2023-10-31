@@ -42,7 +42,7 @@ public class actionBranch
                 quick.scanFiles();
                 break;
             case 2:
-                FullScan full = new FullScan();
+                FullScan full = new FullScan(objects);
                 full.scanFiles();
                 break; 
             case 3:
