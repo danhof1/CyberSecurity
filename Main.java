@@ -89,7 +89,7 @@ public class Main extends Application
 	  //Variables > GROUPS & SCENES
 	  //Sets GUI to 3/4 of screen size
 	  int sceneWidth = (int)(screenSize.getWidth() * (3.0/4)); 
-	  int sceneHeight = (int)(screenSize.getHeight() * (3.0/4)); //377
+	  int sceneHeight = (int)((9.0 / 16) * sceneWidth);  
 	  	  
 	  ArrayList<Scene> scenes = new ArrayList<Scene>();
 	  
@@ -174,7 +174,7 @@ public class Main extends Application
 	  	  
 	  
 	  //Variables > Fonts
-	  int titleSize = (int)(sceneHeight / 21.0);
+	  int titleSize = (int)(sceneHeight / 25.0);
 	  
 	  //Palette setup
 	  //									bg			pri				sec			acc1			acc2			acc3		acc4			acc5
@@ -997,32 +997,86 @@ public class Main extends Application
 		  ArrayList<javafx.scene.Node> scanStuff = new ArrayList<javafx.scene.Node>();
 		  //0: curDir
 		  //1: prog
+		  //2: scanPercent
+		  //3: filesScanned
+		  //4: ratsFound
+		  
+		  
+		  Text scanTitle = new Text("ERR");
+		  scanTitle.setFont(curPalette.getTitle2Font());
+		  scanTitle.setFill(curPalette.getAcc3Color());
+		  Menu.centerText(sceneWidth, 0, 0, scanTitle);
+		  scanTitle.setY(topBarrier + (int)(titleSize*5));
+		  rootSC.getChildren().add(scanTitle);
 		  
 		  //Shows current file(?) being scanned
 		  Text curDir = new Text();
 		  curDir.setFont(curPalette.getDefaultFont());
+		  curDir.setFill(curPalette.getLineColor());
 		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, curDir);
-		  curDir.setY(topBarrier + (int)(titleSize*2.75));
+		  curDir.setY(topBarrier + (int)(titleSize*3.5));
 		  rootSC.getChildren().add(curDir);
-		  scanStuff.add(curDir);
+		  scanStuff.add(curDir); //0
 
+		  
+		  //this is kinda a mess bc of buggy CSS stuff :(
+		  
 		  //Shows progress through scan
-		  ProgressBar prog = Menu.makeProgressBar((int)(sceneWidth*0.9), titleSize, (int)(sceneWidth*0.05), topBarrier + buffer*2, curPalette.getBgColor(), curPalette.getLineColor());
+		  ProgressBar prog = Menu.makeProgressBar((int)(sceneWidth*0.9), (int)(titleSize*1.5), (int)(sceneWidth*0.05), topBarrier + buffer*2, curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
+
+				  // ProgressBarX((int)(sceneWidth*0.9), titleSize, (int)(sceneWidth*0.05), topBarrier + buffer*2);
 		  prog.setProgress(0.25);
+		 
+		  
 		  /*prog.setPrefWidth((int)(sceneWidth*0.9));
 		  prog.setPrefHeight(titleSize);
 		  prog.setLayoutX((int)(sceneWidth*0.05));
 		  prog.setLayoutY(topBarrier + buffer*2);*/
 		  
-		  
+		  //prog.addToGroup(rootSC);
 		  rootSC.getChildren().add(prog);
-
+		  scanStuff.add(prog); //1
 		  
+		  //mess ends here!
+		
+		  Text scanPercent = new Text("0%");
+		  scanPercent.setFont(curPalette.getDefaultFont());
+		  scanPercent.setFill(curPalette.getLineColor());
+		  scanPercent.setX(prog.getLayoutX() + buffer);
+		  scanPercent.setY(curDir.getY());
+		  rootSC.getChildren().add(scanPercent);
+		  scanStuff.add(scanPercent); //2
+		  
+		  Text filesScanned = new Text("0 Files Scanned");
+		  filesScanned.setFont(curPalette.getDefaultFont());
+		  filesScanned.setFill(curPalette.getLineColor());
+		  filesScanned.setX(prog.getLayoutX() + buffer);
+		  filesScanned.setY(curDir.getY());
+		  filesScanned.setWrappingWidth(prog.getPrefWidth() - buffer*2);
+		  filesScanned.setTextAlignment(TextAlignment.RIGHT);
+		  rootSC.getChildren().add(filesScanned);
+		  scanStuff.add(filesScanned); //3
+		  
+		  Text ratsFound = new Text("0 Rats Found");
+		  ratsFound.setFont(curPalette.getDefaultFont());
+		  ratsFound.setFill(curPalette.getLineColor());
+		  ratsFound.setX(prog.getLayoutX() + buffer);
+		  ratsFound.setY(curDir.getY() + titleSize);
+		  ratsFound.setWrappingWidth(prog.getPrefWidth() - buffer*2);
+		  ratsFound.setTextAlignment(TextAlignment.RIGHT);
+		  rootSC.getChildren().add(ratsFound);
+		  scanStuff.add(ratsFound); //4
+		  
+		  //Will be ratscot gif
+		  //Rectangle ratGif = Menu.icon(200, 200, (sceneWidth - 200)/2, sceneHeight-210, curPath + "hamster-wheel.gif");
+		  //rootSC.getChildren().add(ratGif);
+		  		  
 		  EventHandler<Event> deployScan = new EventHandler<Event>()
 		  {
 			    @Override  
 			    public void handle(Event event)
 			    {  
+			    	scanTitle.setText(scanBS.getValue());
 			        // Wrap the operation in a CompletableFuture
 			        CompletableFuture.runAsync(() -> 
 			        {
@@ -1031,7 +1085,8 @@ public class Main extends Application
 			            //Quick Scan
 			            if (scanBS.getValue().contains("Quick")) 
 			            {
-			            	curDir.setText("C:\\Windows\\System32");
+					    	curDir.setText("Starting Scan...");
+			            	//curDir.setText("C:\\Windows\\System32");
 			                try 
 			                {
 			                     ab.actionMethod(1);
@@ -1303,7 +1358,7 @@ public class Main extends Application
 
 		      }    
 		  };  
-		  notifBtn.setOnMouseClicked(toNotifScreen); 
+		  //notifBtn.setOnMouseClicked(toNotifScreen); 
 		  sc.addScene(notifScene, toNotifScreen);
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ Layout ~~~~~~~~~~~~~~~~~~~~~
@@ -1312,7 +1367,12 @@ public class Main extends Application
 		
 		  Rectangle backLOBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
 		  //ArrayList<javafx.scene.Node> backLOBtn = Menu.makeButton(backLOBox, curPalette.getAcc4Color(), buttonFlashes, toMenuScreen, "Back", curPalette.getTitleFont());
-		  //Menu.addToGroup(rootLO, backLOBtn);
+		 
+		  Text backLOTxt = new Text("Back");
+		  backLOTxt.setFont(curPalette.getTitleFont());
+		  ButtonX backLOBtn = new ButtonX(backLOBox, curPalette.getAcc4Color(), backLOTxt, buttonFlashes);
+		  backLOBtn.addToGroup(rootLO);
+		  backLOBtn.addAction(toMenuScreen);
 		  
 		  //ScrollMenu
 		  //								w			h											comp width						comp height				 x  	y	  columns
@@ -1428,10 +1488,7 @@ public class Main extends Application
 
 		  //settingsButtons.get(0).setOnMouseClicked(toLayoutScreen);
 		  settingsButtons.get(0).addAction(toLayoutScreen);
-		  sc.addScene(layoutScene, toLayoutScreen);
-  		  	  
-		  
-  
+		  sc.addScene(layoutScene, toLayoutScreen);  
   } 
  
  

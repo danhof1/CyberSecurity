@@ -58,6 +58,13 @@ public class CustomScan
         try 
         {
             Scan myScan = new Scan();
+            
+            if((!new File(destinationFileName).exists()))
+            {
+            	System.out.println("ERR: File does not exist");
+            	return;
+            }
+            
             myScan.addArray(selectedDirectories);
             myScan.Scanner();
         } catch (IOException | InterruptedException e) {

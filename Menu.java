@@ -12,6 +12,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.ImageInput;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -22,6 +23,9 @@ import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.StrokeType;
@@ -382,11 +386,12 @@ import Frontend.*;
 	 * @param h height
 	 * @param x position
 	 * @param y position
+	 * @param sec fill color
 	 * @param bg background color
 	 * @param st stroke color
 	 * @return progress bar
 	 */
-	public static ProgressBar makeProgressBar(int w, int h, int x, int y, Color bg, Color st)
+	public static ProgressBar makeProgressBar(int w, int h, int x, int y, Color sec, Color bg, Color st)
 	{
 		ProgressBar prog = new ProgressBar();
 		prog.setLayoutX(x);
@@ -394,16 +399,13 @@ import Frontend.*;
 		prog.setPrefHeight(h);
 		prog.setPrefWidth(w);
 		
-		CornerRadii arc = new CornerRadii(5);
+		String style = ("-fx-accent: GREEN; -fx-control-inner-background: WHITE; -fx-box-border: BLACK;");
 		
-		Background fill = new Background(new BackgroundFill(bg, arc, null) );
-		Border stroke = new Border(new BorderStroke(st, BorderStrokeStyle.SOLID, arc, new BorderWidths(2)));
-		//prog.setStyle("-fx-accent: green;");
-		prog.setStyle("-fx-control-inner-background: red");
+		style = style.replace("GREEN", "#" + sec.toString().substring(2, 8));
+		style = style.replace("WHITE", "#" + bg.toString().substring(2, 8));
+		style.replace("BLACK", "#" + st.toString().substring(2, 8));
 		
-		//prog.setBackground(fill);	
-		//prog.setBorder(stroke);
-		
+		prog.setStyle(style);	
 		
 		return prog;
 	}
@@ -512,6 +514,13 @@ import Frontend.*;
 		txt.setY(y + txt.getFont().getSize() + (int)((h - txt.getFont().getSize())*0.8 / 2));
 	}
 	
+	public static void centerText(int w, int x, int y, Text txt)
+	{
+		txt.setX(x);
+		txt.setWrappingWidth(w);
+		txt.setTextAlignment(TextAlignment.CENTER);
+	}
+	
 	/**
 	 * Sets the x position of the menu
 	 * @param x position
@@ -615,4 +624,6 @@ import Frontend.*;
 	{
 		return visible;
 	}
+
+	
 }
