@@ -8,22 +8,18 @@ import java.util.Arrays;
 
 import javafx.scene.Node;
 
-public class QuickScan {
+public class QuickScan 
+{
     private ArrayList<String> quickArray;
     private String username;
     
-	private ArrayList<Node> objects;
-
-    
-    public QuickScan(ArrayList<Node> objs) 
+    public QuickScan() 
     {
-    	objects = objs;
-    	
-    	username = System. getProperty("user.name");
-        quickArray = new ArrayList<String>(Arrays.asList(
+        quickArray = new ArrayList<String>(Arrays.asList
+        (
         	"C:\\Windows\\System32",
-	        "C:\\Windows\\SysWOW64",
-	        "C:\\Users\\" + username + "\\AppData\\Local\\Temp",
+	        "C:\\Windows\\SysWOW64"
+	        /*"C:\\Users\\" + username + "\\AppData\\Local\\Temp",
 	        "C:\\Users\\" + username + "\\AppData\\Roaming",
 	        "C:\\Program Files",
 	        "C:\\Program Files (x86)",
@@ -38,13 +34,15 @@ public class QuickScan {
 	        "C:\\Users\\" + username + "\\Links",
 	        "C:\\Users\\" + username + "\\Searches",
 	        "C:\\Users\\" + username + "\\Saved Games",
-	        "C:\\Users\\" + username + "\\OneDrive"
+	        "C:\\Users\\" + username + "\\OneDrive"*/
         ));
     }
 
-    public void scanFiles() throws IOException, InterruptedException {
-        Scan myScan = new Scan(objects);
+    public void scanFiles() throws IOException, InterruptedException 
+    {
+        Scan myScan = new Scan();
         myScan.addArray(quickArray);
+
         myScan.Scanner();
     }
 }

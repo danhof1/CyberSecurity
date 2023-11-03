@@ -5,10 +5,14 @@ import javafx.application.Application;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import Backend.*;
 import Backend.MainThings.actionBranch;
+import Backend.Scans.CountFiles;
+import Backend.Scans.Scan;
+import Backend.Scans.ScanManager;
 //Scene stuff
 import javafx.scene.Group; 
 import javafx.scene.Scene;
@@ -36,6 +40,7 @@ import javafx.scene.text.Font;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
@@ -64,7 +69,8 @@ import javafx.scene.transform.Rotate;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;  
 import javafx.animation.FadeTransition;  
-import javafx.util.Duration;  
+import javafx.util.Duration;
+import Frontend.ScanMonitor;
 import Frontend.eFXtend.*;
 
 public class Main extends Application 
@@ -75,7 +81,7 @@ public class Main extends Application
 	  //~~~~~~~~~~~~~~~~~~~~~~ VARIABLES ~~~~~~~~~~~~~~~~~~~~~
 	  //Variables > STAGE
 	  stage.setResizable(false);
-	  String verNum = "1.02.00";
+	  String verNum = "1.03.00";
 	
 	  stage.setTitle("R.A.T. Trap Antivirus v" + verNum);
 	
@@ -84,7 +90,7 @@ public class Main extends Application
 	  //Variables > GROUPS & SCENES
 	  //Sets GUI to 3/4 of screen size
 	  int sceneWidth = (int)(screenSize.getWidth() * (3.0/4)); 
-	  int sceneHeight = (int)(screenSize.getHeight() * (3.0/4)); //377
+	  int sceneHeight = (int)((9.0 / 16) * sceneWidth);  
 	  	  
 	  ArrayList<Scene> scenes = new ArrayList<Scene>();
 	  
@@ -169,7 +175,7 @@ public class Main extends Application
 	  	  
 	  
 	  //Variables > Fonts
-	  int titleSize = (int)(sceneHeight / 21.0);
+	  int titleSize = (int)(sceneHeight / 25.0);
 	  
 	  //Palette setup
 	  //									bg			pri				sec			acc1			acc2			acc3		acc4			acc5
@@ -183,6 +189,10 @@ public class Main extends Application
 	  String sampleText = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 	  
 	  String curPath = ("file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/");
+	  String statusIconPath = curPath + "statusGoodBig.PNG";
+
+	  //BACKEND STUFF
+	  //ScanManager scanMan = new ScanManager();
 	  
 	  //~~~~~~~~~~~~~~~~~~~~~~ MAIN MENU ~~~~~~~~~~~~~~~~~~~~~
 	  //COMPOSITION:
@@ -724,7 +734,7 @@ public class Main extends Application
 	  actionButtons.get(1).addAction(fileQuarentine);
 	  
 	  //Main Menu > Graphics > STATUS
-	  Rectangle statusIconBig = Menu.icon(barrier3 - barrier2 - buffer2*2, barrier3 - barrier2 - buffer2*2, barrier2 + buffer2, topBarrier + buffer2, curPath + "statusGoodBig.PNG");
+	  Rectangle statusIconBig = Menu.icon(barrier3 - barrier2 - buffer2*2, barrier3 - barrier2 - buffer2*2, barrier2 + buffer2, topBarrier + buffer2, statusIconPath);
 	  
 	  rootMM.getChildren().add(statusIconBig);
 	  Circle statusBtn = new Circle();
@@ -786,10 +796,10 @@ public class Main extends Application
 		  topBar.toBack();
 		  
 		  //Change to Menu screen
-		  EventHandler<MouseEvent> toMenuScreen = new EventHandler<MouseEvent>() 
+		  EventHandler<Event> toMenuScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
-		      public void handle(MouseEvent event) 
+		      public void handle(Event event) 
 			  {  				  
 				  stage.setScene(menuScene);
 				  Menu.changeScene(rootMM, addToAll);
@@ -971,77 +981,238 @@ public class Main extends Application
 		  rootSC.getChildren().add(cancelText);
 		  cancelText.setTextAlignment(TextAlignment.CENTER);
 
-		  Button cancelBtn = Menu.makeButton(cancelBox, curPalette.getAcc4Color(), buttonFlashes);
-		  cancelBtn.setOnMouseClicked(toMenuScreen);  
-		  rootSC.getChildren().add(cancelBtn);
-		
+		  ButtonX cancelBtn = new ButtonX(cancelBox, curPalette.getAcc4Color(), buttonFlashes);
+		  cancelBtn.addAction(toMenuScreen);
+		  cancelBtn.addAction(new EventHandler<Event>() //kill scan
+			  {
+			    public void handle(Event event)
+			    {
+					ScanManager.killScan();
+
+			    	event.consume();
+			    }
+			  });
+		  
+		  cancelBtn.addToGroup(rootSC);
 		  
 		  
 		  ArrayList<javafx.scene.Node> scanStuff = new ArrayList<javafx.scene.Node>();
 		  //0: curDir
+		  //1: prog
+		  //2: scanPercent
+		  //3: filesScanned
+		  //4: ratsFound
+		  //5: cancelText
+		  //6: scanTitle
 		  
+		  Text scanTitle = new Text("ERR");
+		  scanTitle.setFont(curPalette.getTitle2Font());
+		  scanTitle.setFill(curPalette.getAcc3Color());
+		  Menu.centerText(sceneWidth, 0, 0, scanTitle);
+		  scanTitle.setY(topBarrier + (int)(titleSize*5));
+		  rootSC.getChildren().add(scanTitle);
 		  
+		  //Shows current file(?) being scanned
 		  Text curDir = new Text();
 		  curDir.setFont(curPalette.getDefaultFont());
+		  curDir.setFill(curPalette.getLineColor());
 		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, curDir);
+		  curDir.setY(topBarrier + (int)(titleSize*3.5));
 		  rootSC.getChildren().add(curDir);
+		  scanStuff.add(curDir); //0
 		  
-		  scanStuff.add(curDir);
+		  //this is kinda a mess bc of buggy CSS stuff :(
 		  
+		  //Shows progress through scan
+		  ProgressBar prog = Menu.makeProgressBar((int)(sceneWidth*0.9), (int)(titleSize*1.5), (int)(sceneWidth*0.05), topBarrier + buffer*2, curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
+
+				  // ProgressBarX((int)(sceneWidth*0.9), titleSize, (int)(sceneWidth*0.05), topBarrier + buffer*2);
 		 
-		  EventHandler<Event> deployScan = new EventHandler<Event>() 
-		  {
-			  @Override  
-		      public void handle(Event event)
-			  {  
-				  //Makes an action branch to call scan
-				  actionBranch ab = new actionBranch(scanStuff);		  
-				  //Start a scan
-				  if(scanBS.getValue().contains("Quick")) //Quick scan
-				  {
-					try 
-					{
-						ab.actionMethod(1);		//actual scan
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				  }
-				  
-				  
-				  event.consume();
-		      }    
-		  };  
 		  
+		  /*prog.setPrefWidth((int)(sceneWidth*0.9));
+		  prog.setPrefHeight(titleSize);
+		  prog.setLayoutX((int)(sceneWidth*0.05));
+		  prog.setLayoutY(topBarrier + buffer*2);*/
+		  
+		  //prog.addToGroup(rootSC);
+		  rootSC.getChildren().add(prog);
+		  scanStuff.add(prog); //1
+		  
+		  //mess ends here!
+		
+		  Text scanPercent = new Text("0%");
+		  scanPercent.setFont(curPalette.getDefaultFont());
+		  scanPercent.setFill(curPalette.getLineColor());
+		  scanPercent.setX(prog.getLayoutX() + buffer);
+		  scanPercent.setY(curDir.getY());
+		  rootSC.getChildren().add(scanPercent);
+		  scanStuff.add(scanPercent); //2
+		  
+		  Text filesScanned = new Text("0 Files Scanned");
+		  filesScanned.setFont(curPalette.getDefaultFont());
+		  filesScanned.setFill(curPalette.getLineColor());
+		  filesScanned.setX(prog.getLayoutX() + buffer);
+		  filesScanned.setY(curDir.getY());
+		  filesScanned.setWrappingWidth(prog.getPrefWidth() - buffer*2);
+		  filesScanned.setTextAlignment(TextAlignment.RIGHT);
+		  rootSC.getChildren().add(filesScanned);
+		  scanStuff.add(filesScanned); //3
+		  
+		  Text ratsFound = new Text("0 Rats Found");
+		  ratsFound.setFont(curPalette.getDefaultFont());
+		  ratsFound.setFill(curPalette.getLineColor());
+		  ratsFound.setX(prog.getLayoutX() + buffer);
+		  ratsFound.setY(curDir.getY() + titleSize);
+		  ratsFound.setWrappingWidth(prog.getPrefWidth() - buffer*2);
+		  ratsFound.setTextAlignment(TextAlignment.RIGHT);
+		  rootSC.getChildren().add(ratsFound);
+		  scanStuff.add(ratsFound); //4
+		  
+		  scanStuff.add(cancelText); //5
+		  scanStuff.add(scanTitle); //6
+		  
+		  Rectangle statusIcon = Menu.icon((int)(iconSize*2), (int)(iconSize*2), (int)(sceneWidth/3 - iconSize*2)/2, topBarrier + buffer2, statusIconPath.replace("Big", "Small"));
+		  rootST.getChildren().add(statusIcon);
+		  
+		  //Will be ratscot gif
+		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "hamster-wheel.gif");
+		  rootSC.getChildren().add(ratGif);
+		  scanStuff.add(ratGif); //7		  
+		  scanStuff.add(statusIconBig); //8
+		  scanStuff.add(statusIcon); //9
+		  
+		  ScanMonitor.setObjs(scanStuff);
+		  
+		  EventHandler<Event> deployScan = new EventHandler<Event>()
+		  {
+			    @Override  
+			    public void handle(Event event)
+			    {  
+			    	scanTitle.setText(scanBS.getValue());
+			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
+			    	prog.setProgress(0);
+			    	
+			        // Wrap the operation in a CompletableFuture
+			        CompletableFuture.runAsync(() -> 
+			        {
+			            actionBranch ab = new actionBranch();
+
+			            //Quick Scan
+			            if (scanBS.getValue().contains("Quick")) 
+			            {
+					    	curDir.setText("Starting Scan...");
+			            	//curDir.setText("C:\\Windows\\System32");
+			                try 
+			                {
+			                     ab.actionMethod(1);
+			                } 
+			                catch (IOException | InterruptedException e) 
+			                {
+			                	System.out.println("ERROR");
+			                    e.printStackTrace();
+			                }
+			            }
+			            
+			            //Custom Scan
+			            else if(scanBS.getValue().contains("Custom"))
+			            {
+			            	try 
+			                { 
+			            		System.out.println("dir: " + curDir.getText());
+			            		ab.setPath(curDir.getText());
+			                    ab.actionMethod(4);
+			                } 
+			            	catch (IOException | InterruptedException e)
+			            	{
+			                	System.out.println("ERROR");
+			                    e.printStackTrace();
+			                }
+			            }
+			            //Full scan
+			            else
+			            	try 
+		                {
+		                    ab.actionMethod(4);
+		                } 
+		            	catch (IOException | InterruptedException e)
+		            	{
+		                	System.out.println("ERROR");
+		                    e.printStackTrace();
+		                }
+			            
+			        });
+			       
+			        while(ScanManager.liveScan())
+			        {
+			        	curDir.setText(ScanMonitor.curPath);
+			        }
+			        
+			        event.consume();
+			    }    
+		  };
+
 		  EventHandler<Event> toScanScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event)
 			  {  
-				  Menu.changeScene(rootSC, addToAll); //adds objects
-				  curDir.setText(scanBS.getValue());
-				  curPalette.changeImg(headerIcon, curPath + "scanIcon.PNG", true);
-				  stage.setScene(scanScene); //changes to scan screen
-					
-				  if(stage.getScene() == scanScene);
+				  cancelText.setText("Cancel");
+				  
+				  
+				  if(scanDD.isOpen())
+					  scanDD.getButtonX().getActions().get(0).handle(event);
+				  
+				  
+				  if(scanBS.getValue().contains("Custom"))
 				  {
-					new Thread();
-				  	deployScan.handle(event);
+					  DirectoryChooser dir = new DirectoryChooser();  
+					  dir.setTitle("Choose a Folder to Scan");
+					  
+					  File dir1 = dir.showDialog(stage);
+					  
+					  if(dir1 != null)
+					  {
+						  curDir.setText(dir1.toString());
+						  System.out.println(dir1.toString()); //TEMP
+						  
+						  //After file is chosen, starts scan process
+						  Menu.changeScene(rootSC, addToAll); //adds objects
+						  //curDir.setText(scanBS.getValue());
+						  curPalette.changeImg(headerIcon, curPath + "scanIcon.PNG", true);
+						  stage.setScene(scanScene); //changes to scan screen
+						  
+						  //Deploys scan
+						  if(stage.getScene() == scanScene);
+						  {
+							System.out.println("Deploying scan...");
+						  	deployScan.handle(event);
+						  }
+					  }
+
 				  }
 				  
+				  else
+				  {
+					  Menu.changeScene(rootSC, addToAll); //adds objects
+					  curDir.setText(scanBS.getValue());
+					  curPalette.changeImg(headerIcon, curPath + "scanIcon.PNG", true);
+					  stage.setScene(scanScene); //changes to scan screen
+					  if(stage.getScene() == scanScene);
+					  {
+						System.out.println("Deploying scan...");
+					  	deployScan.handle(event);
+					  }
+				  }
 				  
 				  event.consume();
 		      }    
 		  };  
 		  scanBtn.addAction(toScanScreen); 		  
 		  
-		  
-		  //scanBtn.addAction(deployScan);
-		  
+		  		  
 		  sc.addScene(scanScene, toScanScreen);
+		  
+		  
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ STATUS ~~~~~~~~~~~~~~~~~~~~~
 		  statusScene.setFill(curPalette.getBgColor());
@@ -1064,8 +1235,7 @@ public class Main extends Application
 		  backSTBtn.setOnMouseClicked(toMenuScreen);  
 		  rootST.getChildren().add(backSTBtn);
   
-		  Rectangle statusIcon = Menu.icon((int)(iconSize*2), (int)(iconSize*2), (int)(sceneWidth/3 - iconSize*2)/2, topBarrier + buffer2, curPath + "statusGoodSmall.PNG");
-		  rootST.getChildren().add(statusIcon);
+		  
 		  
 		  
 		  EventHandler<MouseEvent> toStatusScreen = new EventHandler<MouseEvent>() 
@@ -1076,7 +1246,7 @@ public class Main extends Application
 				  
 				  stage.setScene(statusScene);
 				  Menu.changeScene(rootST, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "statusGoodSmall.PNG", true);
+				  curPalette.changeImg(headerIcon, statusIconPath.replace("Big", "Small"), true);
 				  event.consume();
 		      }    
 		  };  
@@ -1222,7 +1392,7 @@ public class Main extends Application
 
 		      }    
 		  };  
-		  notifBtn.setOnMouseClicked(toNotifScreen); 
+		  //notifBtn.setOnMouseClicked(toNotifScreen); 
 		  sc.addScene(notifScene, toNotifScreen);
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ Layout ~~~~~~~~~~~~~~~~~~~~~
@@ -1230,8 +1400,13 @@ public class Main extends Application
 		  		  
 		
 		  Rectangle backLOBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
-		  ArrayList<javafx.scene.Node> backLOBtn = Menu.makeButton(backLOBox, curPalette.getAcc4Color(), buttonFlashes, toMenuScreen, "Back", curPalette.getTitleFont());
-		  Menu.addToGroup(rootLO, backLOBtn);
+		  //ArrayList<javafx.scene.Node> backLOBtn = Menu.makeButton(backLOBox, curPalette.getAcc4Color(), buttonFlashes, toMenuScreen, "Back", curPalette.getTitleFont());
+		 
+		  Text backLOTxt = new Text("Back");
+		  backLOTxt.setFont(curPalette.getTitleFont());
+		  ButtonX backLOBtn = new ButtonX(backLOBox, curPalette.getAcc4Color(), backLOTxt, buttonFlashes);
+		  backLOBtn.addToGroup(rootLO);
+		  backLOBtn.addAction(toMenuScreen);
 		  
 		  //ScrollMenu
 		  //								w			h											comp width						comp height				 x  	y	  columns
@@ -1347,16 +1522,10 @@ public class Main extends Application
 
 		  //settingsButtons.get(0).setOnMouseClicked(toLayoutScreen);
 		  settingsButtons.get(0).addAction(toLayoutScreen);
-		  sc.addScene(layoutScene, toLayoutScreen);
-		  
-		  
-		  
-		  //TEMP
-		 /*actionBranch ab = new actionBranch();
-		 ab.actionMethod(1);*/
-  } 
- 
- 
+		  sc.addScene(layoutScene, toLayoutScreen);  
+  	}  	
+  
+  
 	public static void main(String[] args) throws IOException
 	{
 		  launch(args);

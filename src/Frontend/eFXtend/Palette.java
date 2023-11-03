@@ -16,6 +16,7 @@ import javafx.animation.FillTransition;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.ImageInput;
 import javafx.scene.image.Image;
@@ -367,6 +368,19 @@ public class Palette
 		imgIn.setSource(newImg);
 	}
 	
+	/**
+	 * Changes the image on a rectangle
+	 * @param rectangle containing image to be changed
+	 * @param imgPath path to new image
+	 */
+	static public void changeImg(Rectangle rect, String imgPath)
+	{
+		ImageInput imgIn = (ImageInput)rect.getEffect();
+		Image oldImg = imgIn.getSource();
+		
+		Image newImg = new Image(imgPath, oldImg.getWidth(), oldImg.getHeight(), false, false);
+		imgIn.setSource(newImg);
+	}
 	
 	public void setPalette(Palette newPalette)
 	{
@@ -572,6 +586,10 @@ public class Palette
 								}
 								tf.setStyle(newStyle);
 							}
+						}
+						if(ProgressBar.class.isAssignableFrom(control.getClass()))
+						{
+							//Update progress bar colors
 						}
 					}
 				}

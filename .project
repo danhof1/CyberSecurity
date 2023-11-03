@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Rat_Trap</name>
+	<name>RAT GUI</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -10,8 +10,26 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>graphics</name>
+			<type>2</type>
+			<location>C:/Users/Ashley/RatTrap/RatTrap GUI/graphics</location>
+		</link>
+		<link>
+			<name>graphics/ratCage.png</name>
+			<type>1</type>
+			<location>C:/Users/Ashley/RatTrap/RatTrap 1.3/graphics/ratCage.png</location>
+		</link>
+	</linkedResources>
 </projectDescription>

@@ -10,35 +10,24 @@ import Backend.Pickers.*;
 import javafx.scene.Node;
 
 public class actionBranch 
-{
-	
-	private ArrayList<Node> objects;
-	
-	/**
-	 * constructor
-	 * @param txt text to update in real-time
-	 * @param tot total number of files to scan
-	 * @param cur current number of files scanned
-	 */
-	public actionBranch(ArrayList<Node> objs)
-	{
-		objects = objs;
-	}
+{	
+	private String path;
 	
 	public actionBranch()
 	{
 		
 	}
 	
-	public void actionMethod(int n) throws IOException, InterruptedException 
+	public void setPath(String p)
+	{
+		path = p;
+	}
+	
+	public Object actionMethod(int n) throws IOException, InterruptedException 
 	{
         switch (n) {
-	        case 0:
-	        	clamstart clam = new clamstart();
-	        	clam.startClam();
-	        	break;
         	case 1:
-                QuickScan quick = new QuickScan(objects);
+                QuickScan quick = new QuickScan();
                 quick.scanFiles();
                 break;
             case 2:
@@ -50,8 +39,9 @@ public class actionBranch
             	 select.Selector();
             	 break;
             case 4:
-            	CustomScan cust = new CustomScan();
-            	cust.scanFiles(cust.parseTemp());
+            	CustomScan cust = new CustomScan(path);
+            	cust.scanFiles();
+            	//cust.scanFiles(cust.parseTemp());
             	break;
             case 5:
             	WhiteList white= new WhiteList();
@@ -91,5 +81,7 @@ public class actionBranch
             	time7.viewSchedule();
             	break;
         }
+        
+        return null;
 	}
 }

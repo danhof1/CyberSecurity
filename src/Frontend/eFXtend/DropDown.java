@@ -20,6 +20,7 @@ public class DropDown extends AnimatedMenu
 	private Rectangle rect;
 	private int distance;
 	private int angle;
+	private boolean openBool;
 	
 	/**
 	 * Constructor of DropDown object
@@ -39,7 +40,7 @@ public class DropDown extends AnimatedMenu
 		components = list;
 		animationsOn = true;
 		angle = 180;
-		
+		openBool = false;
 		
         RotateTransition rotate = new RotateTransition();
         rotate.setByAngle(180);  
@@ -75,7 +76,7 @@ public class DropDown extends AnimatedMenu
             @Override  
             public void handle(Event event) 
             {  
-
+            	openBool = !openBool;
             	distance = -1 * distance;
             	
             	if(animationsOn)
@@ -170,6 +171,14 @@ public class DropDown extends AnimatedMenu
 	public void flipDirection()
 	{
 		distance = -distance;
+	}
+	
+	/**
+	 * @return true if dropdown is open, false if closed
+	 */
+	public boolean isOpen()
+	{
+		return openBool;
 	}
 	
 }

@@ -56,21 +56,20 @@ public class ButtonX extends Menu
 	 * @param c Color to flash when pressed
 	 * @param list ArrayList of all button color flashes
 	 */
-	public ButtonX(Rectangle rect, Color c, String str, ArrayList<FillTransition> list)
+	public ButtonX(Rectangle rect, Color c, Text t, ArrayList<FillTransition> list)
 	{
 		super();
 		events = new ArrayList<EventHandler<Event>>();
 		btn = makeButtonX(rect, c, list);
+		bgRect = rect;
 		
-		txt = new Text(str);
-		centerText(bgRect, txt);
-		components.add(txt);
-		
+		txt = t;
+		centerText(bgRect, txt);		
 		
 		buttons.add(btn);
 		bgRect = rect;
 		components.add(bgRect);
-		
+		components.add(txt);
 		
 		setAction();
 	}

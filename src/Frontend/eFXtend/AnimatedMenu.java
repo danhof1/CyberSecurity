@@ -3,7 +3,14 @@ package Frontend.eFXtend;
 import java.util.ArrayList;
 
 import javafx.animation.Animation;
+import javafx.animation.Transition;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
 
 public class AnimatedMenu extends Menu
 {
