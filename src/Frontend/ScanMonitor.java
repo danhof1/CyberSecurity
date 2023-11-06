@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.text.Text;
 
+//peepee
 public class ScanMonitor 
 {
 	public static ReentrantLock lock = new ReentrantLock();
