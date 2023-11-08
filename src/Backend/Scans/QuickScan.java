@@ -17,8 +17,10 @@ public class QuickScan
     {
         quickArray = new ArrayList<String>(Arrays.asList
         (
-        	"C:\\Windows\\System32",
-	        "C:\\Windows\\SysWOW64"
+        //"C:\\Windows\\System32",
+	     //"C:\\Windows\\SysWOW64"
+"C:\\Users\\Daniel\\OneDrive\\Desktop\\Memes",
+"C:\\Users\\Daniel\\OneDrive\\Desktop\\Games" 		
 	        /*"C:\\Users\\" + username + "\\AppData\\Local\\Temp",
 	        "C:\\Users\\" + username + "\\AppData\\Roaming",
 	        "C:\\Program Files",

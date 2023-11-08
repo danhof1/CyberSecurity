@@ -4,18 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class clamstart {
+public class freshClam {
 
-    public void startClam() throws IOException, InterruptedException {
+    public void Fresh() throws IOException, InterruptedException {
         try {
-            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamd.exe");
+            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\freshclam.exe");
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line;
-            boolean firstLineReceived = false; // Flag to track if the first line has been received
+            //boolean firstLineReceived = false; // Flag to track if the first line has been received
             
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
-                if (!firstLineReceived) {
+              /*  if (!firstLineReceived) {
                     // Send a readiness signal as soon as the first line is received
                     System.out.println("Sending readiness signal...");
                     // Use this signal to indicate that the next thread can start
@@ -24,12 +24,12 @@ public class clamstart {
                     }
                     firstLineReceived = true;
                     Thread.sleep(1000);
-                }
+                }*/
             }
             
             proc.waitFor();
         } catch (Exception e) {
-            System.out.println("clamd could not be found.");
+            System.out.println("Freshclam could not be found.");
         }
     }
 }
