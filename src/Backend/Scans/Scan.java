@@ -77,62 +77,13 @@ public class Scan
             //System.out.println(filePaths.get(i));
                     	
             //Runs clamdscan
-            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamscan.exe --recursive " + filePaths.get(i));
+            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
             
-            //Reads the file
-            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line = "";
-            
-            //Iterates through file
-            while ((line = reader.readLine()) != null && ScanManager.liveScan()) //added proc.isAlive so it ends if scan is cancelled
-            {	
-            	if(line.equals("----------- SCAN SUMMARY -----------") || line.isEmpty())
-            	{
-            		break;
-            	}
-            	
-                String path = line.substring(0, line.lastIndexOf(':'));
-                System.out.println(line);
-                
-                
-                
-                File temp = new File(path);
-                
-                //curDir.setText(path);	//Updates status text
-                ScanMonitor.setDir(path);
-                
-                count++;
-                
-        		if(filePaths.size() == 1)
-        		{
-        			ratio = (int)(((double)current / total)*100);
-        			current += temp.length();
-        	    	//prog.setProgress((double)current/total);
-        	    	//scanPercent.setText(ratio + "%");
-        	    	System.out.println(ratio);
-
-        		}
-                
-                
-                //System.out.println(current +"/" + total);
-                //filesScanned.setText(count + " Files Scanned");
-                
-
-                if(line.substring(line.lastIndexOf(' ')+1).equals("FOUND"))
-                {
-                	rats++;
-                	//ratsFound.setText(rats + " Rats Found");
-                }
-                
-                	
-            }
-                
             if(!ScanManager.liveScan())
             {
             	kill();
             	break;
             }
-            
             //Waits until clamscan is done
             proc.waitFor();
             System.out.println("Done!");
@@ -196,7 +147,7 @@ public class Scan
     	
 		try 
 		{
-			Runtime.getRuntime().exec("Taskkill /IM clamscan.exe /F");
+			Runtime.getRuntime().exec("Taskkill /IM clamdscan.exe /F");
 		}
 		catch (IOException e)
 		{

@@ -23,9 +23,14 @@ public class actionBranch
 		path = p;
 	}
 	
+   
 	public Object actionMethod(int n) throws IOException, InterruptedException 
 	{
         switch (n) {
+        	case 0:
+        		clamstart clam = new clamstart();
+	        	clam.startClam();
+	        	break;
         	case 1:
                 QuickScan quick = new QuickScan();
                 quick.scanFiles();
@@ -80,6 +85,9 @@ public class actionBranch
             	time6.Schedule();
             	time7.viewSchedule();
             	break;
+            case 13:
+            	freshClam myFresh = new freshClam();
+            	myFresh.Fresh();
         }
         
         return null;
