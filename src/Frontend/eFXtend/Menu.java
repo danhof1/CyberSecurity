@@ -11,6 +11,8 @@ import javafx.scene.control.Control;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.ImageInput;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
@@ -36,7 +38,7 @@ import javafx.util.Duration;
 
 import Frontend.*;
 
-;public class Menu 
+public class Menu 
 {
 	protected ArrayList<Shape> components;
 	protected ArrayList<Control> buttons;
@@ -143,6 +145,19 @@ import Frontend.*;
 		if(buttonList != null && buttons != null)
 		{
 			buttonList.addAll(buttons);
+		}
+	}
+	
+	public void addToArray(ArrayList<javafx.scene.Node> list)
+	{
+		if(components != null)
+		{
+			list.addAll(components);
+		}
+		
+		if(buttons != null)
+		{
+			list.addAll(buttons);
 		}
 	}
 	
@@ -518,6 +533,7 @@ import Frontend.*;
 	{
 		txt.setX(x);
 		txt.setWrappingWidth(w);
+		txt.setY(y);
 		txt.setTextAlignment(TextAlignment.CENTER);
 	}
 	
@@ -620,9 +636,66 @@ import Frontend.*;
 		}
 	}
 	
+	public static String getImgPath(String imgName)
+	{
+		  return "file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/" + imgName;
+	}
+	
 	public boolean isVisible()
 	{
 		return visible;
+	}
+	
+	public void toFront()
+	{
+		if(components != null)
+		{
+			for(int i = 0; i < components.size(); i++)
+			{
+				components.get(i).toFront();
+			}
+		}
+		
+		if(buttons != null)
+		{
+			for(int i = 0; i < buttons.size(); i++)
+			{
+				buttons.get(i).toFront();
+			}
+		}
+	}
+	/**
+	 * Adds drop shadow
+	 * @param obj
+	 * @param radius
+	 * @param spread
+	 */
+	public static void addShadow(javafx.scene.Node obj, int radius, double spread)
+	{
+		DropShadow drop = new DropShadow();  
+        drop.setBlurType(BlurType.GAUSSIAN);  
+        drop.setColor(Color.BLACK);  
+        drop.setHeight(50);  
+        drop.setWidth(50);  
+        drop.setOffsetX(-5);  
+        drop.setOffsetY(5);  
+        drop.setSpread(spread);       
+        drop.setRadius(radius);
+        obj.setEffect(drop); 
+	}
+	
+	public static void addShadow(javafx.scene.Node obj, int direction, int radius, double spread)
+	{
+		DropShadow drop = new DropShadow();  
+        drop.setBlurType(BlurType.GAUSSIAN);  
+        drop.setColor(Color.BLACK);  
+        drop.setHeight(50);  
+        drop.setWidth(50);  
+        drop.setOffsetX(-5);  
+        drop.setOffsetY(5);  
+        drop.setSpread(spread);       
+        drop.setRadius(radius);
+        obj.setEffect(drop); 
 	}
 
 	

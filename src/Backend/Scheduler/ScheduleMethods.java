@@ -1,7 +1,6 @@
 package Backend.Scheduler;
 
 import Backend.Pickers.*;
-import Backend.MainThings.sqlMethods;
 
 public class ScheduleMethods {
 
@@ -21,10 +20,10 @@ public class ScheduleMethods {
 		 }
 			
 	}
-	public void rmSchedule() {
+	public void rmSchedule(int n) {
 		sqlMethods mySql = new sqlMethods();
-		mySql.rmItem(1);
-		mySql.fixID(1);
+		mySql.rmItem(n);
+		mySql.fixID(n);
 	}
 	public void wipeSchedule() {
 		sqlMethods mySql = new sqlMethods();

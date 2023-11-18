@@ -2,28 +2,28 @@ package Frontend.eFXtend;
 
 import java.util.ArrayList;
 
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 
 public class SceneControl
 {
 	ArrayList<Scene> scenes;
-	ArrayList<EventHandler<MouseEvent>> events;
+	ArrayList<EventHandler<Event>> events;
 	
 	public SceneControl()
 	{
 		scenes = new ArrayList<Scene>();
-		events = new ArrayList<EventHandler<MouseEvent>>();
+		events = new ArrayList<EventHandler<Event>>();
 	}
 	
-	public void addScene(Scene scene, EventHandler<? super MouseEvent> eventHandler)
+	public void addScene(Scene scene, EventHandler<Event> eventHandler)
 	{
 		scenes.add(scene);
-		events.add((EventHandler<MouseEvent>) eventHandler);
+		events.add((EventHandler<Event>) eventHandler);
 	}
 	
-	public EventHandler<MouseEvent> toScene(Scene scene)
+	public EventHandler<Event> toScene(Scene scene)
 	{
 		int index = scenes.indexOf(scene);
 		if(index != -1)

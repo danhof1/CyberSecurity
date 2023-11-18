@@ -69,11 +69,11 @@ public class actionBranch
             	ScheduleMethods time3 = new ScheduleMethods();
             	time3.printSortedSchedule();
             	break;
-            case 10:
+           /* case 10:
             	ScheduleMethods time4 = new ScheduleMethods();
             	time4.rmSchedule();
             	time4.viewSchedule();
-            	break;
+            	break;*/
             case 11:
             	ScheduleMethods time5 = new ScheduleMethods();
             	time5.wipeSchedule();

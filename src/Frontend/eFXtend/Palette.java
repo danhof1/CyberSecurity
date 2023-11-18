@@ -492,7 +492,7 @@ public class Palette
 						}
 					}
 					
-					if(shape.getEffect() != null)
+					if(shape.getEffect() != null && ImageInput.class.isAssignableFrom(shape.getEffect().getClass()))
 					{
 						if(this.isLightTheme() != newPalette.isLightTheme())
 						{

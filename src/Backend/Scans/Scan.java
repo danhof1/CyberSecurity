@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import Backend.MainThings.clamstart;
 import Frontend.ScanMonitor;
 import Frontend.eFXtend.Palette;
 import javafx.scene.Node;
@@ -13,7 +14,7 @@ import javafx.scene.effect.ImageInput;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
-public class Scan 
+public class Scan //extends Thread
 {
     private List<String> filePaths;
 	private ArrayList<Node> objects;
@@ -21,7 +22,7 @@ public class Scan
 	private int count;
 	private int rats;
 	private long total;	//scan bar denominator
-	private long current;	//scan bar numerator
+	//private long current;	//scan bar numerator
     private double ratio;
 	
 	
@@ -31,13 +32,13 @@ public class Scan
 	private Text scanPercent;
 	private Text filesScanned;
 	private Text ratsFound;
+	private boolean firstLineReceived = false;
 	
 	//Changed to global variable so the scan can be cancelled
     
     public Scan() 
     {
         this.filePaths = new ArrayList<>();
-        current = 0;
         count = 0;
         rats = 0;
     }
@@ -53,117 +54,48 @@ public class Scan
         filePaths = directories;
         total = 0;
     }
-
-    public void Scanner() throws IOException, InterruptedException, java.lang.NullPointerException
-    {    	   	 	
-    	ScanManager.startScan();
-    	//curDir.setText("Starting Scan...");
-    	//scanPercent.setText("0%");
-    	//filesScanned.setText("0 Files Scanned");
-    	//ratsFound.setText("0 Rats Found");
-		//prog.setProgress(0);
-		
-		if(filePaths.size() == 1)
-		{
-			total = CountFiles.dirSize(new File(filePaths.get(0)));
+    /*public void run() {
+    	try {
+			Scanner();
+		} catch (NullPointerException | IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-    	//total = totalSize();
-    	//System.out.println("Total size: " + total);
-    	     	
+    }*/
+    public void Scanner() throws IOException, InterruptedException, java.lang.NullPointerException
+    {    
+    	ScanManager.startScan();
+    	total = filePaths.size();
+    	//clamstart.total = filePaths.size();
+    	//clamstart.count = 0;
+    	//clamstart.rats = 0;
+    	   
+    	//System.out.println("Total: " + clamstart.total);
         for (int i = 0; i < filePaths.size(); i++) 
         {
-        	//Prints to console
-            //System.out.println(filePaths.get(i));
-                    	
+        	System.out.println("TEST: " + filePaths.get(i));
+        	//files in current dir:
+        	long subTotal = CountFiles.dirCount(new File(filePaths.get(i)));
+
+        	//clamstart.subTotal = subTotal;
+        	//System.out.println("Subtotal: " + clamstart.subTotal);
+        	
+        	//Prints to console                    	
             //Runs clamdscan
             Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
             
             if(!ScanManager.liveScan())
             {
-            	kill();
+            	System.out.println("Dead");
+            	proc.destroy();
             	break;
             }
             //Waits until clamscan is done
             proc.waitFor();
-            System.out.println("Done!");
-            /*curDir.setText("Done!");
-            scanPercent.setText("100%");
-            prog.setProgress(1);
-            Text back = (Text)objects.get(5);
-            back.setText("Back");
-            
-            Text scanTitle = (Text)objects.get(6);
-            Rectangle ratGif = (Rectangle)objects.get(7);
-            String ratPath = ((ImageInput)ratGif.getEffect()).getSource().getUrl();
-            ratPath = ratPath.substring(0, ratPath.lastIndexOf('/')+1);
-            
-            if(rats == 0) //no threats
-            {
-            	scanTitle.setText("You're all good!");
-            	ratPath = ratPath + "cheese.jpg";
-            	
-            }
-            else //threats found
-            {
-            	scanTitle.setText(ratsFound.getText());
-            	ratPath = ratPath + "ratCage.png";
-
-            	
-            	for(int j = 8; j <= 9; j++)
-            	{
-            		Rectangle statusIcon = (Rectangle)objects.get(j);
-            		String statusPath = ((ImageInput)statusIcon.getEffect()).getSource().getUrl();
-            		
-            		if(statusPath.contains("Good"))
-            		{
-            			statusPath = statusPath.replace("Good", "Bad");
-                    	Palette.changeImg(statusIcon, statusPath);
-            		}
-            		
-            		else if(statusPath.contains("Ok"))
-            		{
-                		statusPath = statusPath.replace("Ok", "Bad");
-                    	Palette.changeImg(statusIcon, statusPath);
-            		}
-            		
-            		
-            		
-            	}
-            }
-            
-        	Palette.changeImg(ratGif, ratPath);
-			*/
+            System.out.println("test");
+            //clamstart.count = ;      
         }
+        System.out.println("Done!");
+        ScanManager.killScan();
     }
-    
-    /**
-     * kills the scan
-     * ~Ashley
-     */
-    public void kill()
-    {
-    	System.out.println("Killing scan...");
-    	
-		try 
-		{
-			Runtime.getRuntime().exec("Taskkill /IM clamdscan.exe /F");
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-    /**
-     * Used for progress bar denominator
-     * ~Ashley
-     * @return total size of files being scanned
-     */
-    
-    private void incProg()
-    {
-    }
-    
 }

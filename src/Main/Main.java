@@ -6,12 +6,20 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import Backend.*;
 import Backend.MainThings.actionBranch;
+import Backend.MainThings.clamstart;
+import Backend.MainThings.freshClam;
 import Backend.Scans.CountFiles;
-import Backend.Scans.Scan;
+import Backend.Scans.CustomScan;
+import Backend.Scans.FullScan;
+import Backend.Scans.QuickScan;
+import Backend.Scans.Scan2;
+import Backend.Scans.Scan2.ScanType;
 import Backend.Scans.ScanManager;
 //Scene stuff
 import javafx.scene.Group; 
@@ -20,6 +28,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 
@@ -34,7 +43,6 @@ import javafx.scene.shape.Shape;
 
 //Text
 import javafx.scene.text.*; 
-import javafx.scene.text.Font;
 
 //User interactions
 import javafx.scene.control.Button;
@@ -72,16 +80,37 @@ import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import Frontend.ScanMonitor;
 import Frontend.eFXtend.*;
-
+import javafx.concurrent.Worker.State;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventType;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.Label;
 public class Main extends Application 
 { 
-  @Override
+  @SuppressWarnings("unchecked")
+@Override
   public void start(Stage stage) throws Exception, InterruptedException, IOException
   {
 	  //~~~~~~~~~~~~~~~~~~~~~~ VARIABLES ~~~~~~~~~~~~~~~~~~~~~
+	  /*
+	   * NOTE: most of this can be ignored. This is where I set up some variables.
+	   */
+	  
+	  //Eventually will not need actionbranch
+	  actionBranch ab = new actionBranch();
+	 
+	  //Starts clamav engine
+	  ExecutorService executorService = Executors.newFixedThreadPool(3); //number of threads?
+	  freshClam myFresh = new freshClam();	  
+      executorService.execute(myFresh);
+      clamstart cs = new clamstart();
+      executorService.execute(cs);
+      
+      
 	  //Variables > STAGE
 	  stage.setResizable(false);
-	  String verNum = "1.03.00";
+	  String verNum = "1.05.00";
 	
 	  stage.setTitle("R.A.T. Trap Antivirus v" + verNum);
 	
@@ -92,7 +121,10 @@ public class Main extends Application
 	  int sceneWidth = (int)(screenSize.getWidth() * (3.0/4)); 
 	  int sceneHeight = (int)((9.0 / 16) * sceneWidth);  
 	  	  
-	  ArrayList<Scene> scenes = new ArrayList<Scene>();
+	  //ArrayList<Scene> scenes = new ArrayList<Scene>();
+	  
+	  Group rootLG = new Group();
+	  Scene loadingScene = new Scene(rootLG, sceneWidth, sceneHeight);
 	  
 	  Group rootMM = new Group();
 	  Scene menuScene = new Scene(rootMM, sceneWidth, sceneHeight);
@@ -106,10 +138,13 @@ public class Main extends Application
 	  Scene createAcctScene = new Scene(rootCA, sceneWidth, sceneHeight);
 	  //scenes.add(createAcctScene);
 
-	  Group rootSC = new Group(); //todo
+	  Group rootSC = new Group(); 
 	  Scene scanScene = new Scene(rootSC, sceneWidth, sceneHeight);
 	  //scenes.add(scanScene);
 
+	  Group rootSF = new Group();
+	  Scene scanFScene = new Scene(rootSF, sceneWidth, sceneHeight);
+	  
 	  Group rootST = new Group();
 	  Scene statusScene = new Scene(rootST, sceneWidth, sceneHeight);
 	  //scenes.add(statusScene);
@@ -172,7 +207,7 @@ public class Main extends Application
 	  Color lilacPurple  = Color.web("b5ade9");
 	  Color moonPurple = Color.web("ccc7f0");
 	  
-	  	  
+	  
 	  
 	  //Variables > Fonts
 	  int titleSize = (int)(sceneHeight / 25.0);
@@ -190,9 +225,9 @@ public class Main extends Application
 	  
 	  String curPath = ("file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/");
 	  String statusIconPath = curPath + "statusGoodBig.PNG";
-
-	  //BACKEND STUFF
-	  //ScanManager scanMan = new ScanManager();
+	  ArrayList<AnimatedMenu> animMenus = new ArrayList<AnimatedMenu>();
+	  
+	 
 	  
 	  //~~~~~~~~~~~~~~~~~~~~~~ MAIN MENU ~~~~~~~~~~~~~~~~~~~~~
 	  //COMPOSITION:
@@ -201,35 +236,27 @@ public class Main extends Application
 	  //Bottom bar: 1/3 height, 6/7 width
 	  
 	  menuScene.setFill(curPalette.getBgColor());
-	  stage.show();
 	  
 	  //Main Menu > LAYOUT
 	  //Main Menu > Layout > Top bar
-	  Rectangle topBar = new Rectangle();
-	  topBar.setWidth(sceneWidth);
-	  topBar.setHeight((int) (sceneHeight / 7.0));
-	  topBar.setFill(curPalette.getPriColor());
-	  topBar.setStroke(curPalette.getLineColor());
-	  topBar.setStrokeType(StrokeType.INSIDE);
-	  topBar.setStrokeWidth(2);
+	  Rectangle topBar = Menu.icon(sceneWidth, sceneHeight/7, 0, 0, 0, curPalette.getPriColor(), curPalette.getLineColor());
+	  //Menu.addShadow(topBar, 30, 0);
+	  //System.out.println(topBar.getHeight());
+	
 	  
-	  //` Menu > Layout > Side Line
+	  // Menu > Layout > Side Line
 	  Line sideLine = new Line(sceneWidth-1, 0, sceneWidth-1, sceneHeight);
 	  sideLine.setStroke(curPalette.getLineColor());
 	  sideLine.setStrokeWidth(2);
 	  
 	  //Main Menu > Layout > Side Bar
-	  Rectangle sideBar = new Rectangle();
-	  sideBar.setWidth((int)(sceneWidth / 7.0));
-	  sideBar.setHeight(sceneHeight);
-	  sideBar.setFill(curPalette.getPriColor());
-	  sideBar.setStroke(curPalette.getLineColor());
-	  sideBar.setStrokeType(StrokeType.INSIDE);
-	  sideBar.setStrokeWidth(2);
+	  Rectangle sideBar = Menu.icon(sceneWidth/7, sceneHeight, 0, 0, 0, curPalette.getPriColor(), curPalette.getLineColor());
 	  rootMM.getChildren().add(sideBar);
 	  
-	  
 	  //Main Menu > Layout > VARIABLES
+	  /*
+	   * I use these variables to position things
+	   */
 	  int barrier1 = (int)sideBar.getWidth();
 	  int barrier2 = barrier1 + (sceneWidth - barrier1 ) / 3;
 	  
@@ -314,9 +341,6 @@ public class Main extends Application
 	  }
 	 
 	  //Main Menu > GRAPHICS
-	
-
-	  
 	  //Main Menu > Layout > Title
 	  Text ratTrap = new Text("R.A.T. Trap Antivirus");
 	  ratTrap.setY((topBarrier / 2));
@@ -335,17 +359,16 @@ public class Main extends Application
 	  about.setUnderline(true);
 	  
 	  Rectangle aboutIcon = Menu.icon(icon2Height/4, icon2Height/4, sceneWidth/2 + icon2Height/8, (int)(about.getY() - (icon2Height * (1.5/8))), curPath + "infoIcon.PNG");
-	  
-	  Button aboutBtn = new Button();
 	  ImageInput aboutInput = (ImageInput)(aboutIcon.getEffect());
-	  aboutBtn.setPrefWidth((int)(titleSize * 0.45)*5 + aboutInput.getSource().getWidth());
+
+	  //About button stuff
+	  Button aboutBtn = new Button();
+	  aboutBtn.setPrefWidth((int)(3*titleSize) + aboutInput.getSource().getWidth());
 	  aboutBtn.setPrefHeight((int)titleSize*0.75);
 	  aboutBtn.setLayoutX(aboutInput.getX() - aboutBtn.getPrefWidth() + aboutInput.getSource().getWidth());
 	  aboutBtn.setLayoutY(((ImageInput)aboutIcon.getEffect()).getY());
 	  aboutBtn.setOpacity(0);
-	
-	  rootMM.getChildren().add(aboutBtn);
-	
+	  	  
 	  FillTransition aboutFill = new FillTransition();  
 	  aboutFill.setAutoReverse(true);  	      
 	  aboutFill.setCycleCount(1);  
@@ -353,15 +376,12 @@ public class Main extends Application
 	  aboutFill.setToValue(curPalette.getLineColor());  
 	  aboutFill.setShape(about);  
 	  buttonFlashes.add(aboutFill);	    
-	  
-	  //aboutFill.setOnFinished((finish) -> aboutFill.setToValue(curPalette.getAcc2Color()));
-	  
+	  	  
 	  //Main Menu > Graphics > Login Box
-
-	  
 	  Rectangle loginBox = Menu.icon(iconSize, iconSize, sceneWidth - buffer2 - iconSize, buffer, 10, curPalette.getPriColor(), curPalette.getLineColor());
 	  Rectangle loginIcon = Menu.icon((int)(iconSize * 0.8), (int)(iconSize * 0.8), loginBox, curPath + "loginIcon.PNG");
-	  Button loginBtn = Menu.makeButton(loginBox, curPalette.getAcc3Color(), buttonFlashes);
+	  ButtonX loginBtn = new ButtonX(loginBox, curPalette.getAcc3Color(), buttonFlashes);
+	  
 	  
 	  //Main Menu > Graphics > Icon Box
 	  Rectangle iconBox = Menu.icon(iconSize, iconSize, buffer2, buffer, 10, curPalette.getPriColor(), curPalette.getLineColor());
@@ -376,6 +396,7 @@ public class Main extends Application
 	  notifBtn.setPrefHeight(iconSize);
 	  notifBtn.setOpacity(0);
 	  
+	 
 	  //Main Menu > Graphics > Settings boxes
 	  ArrayList<Rectangle> settingsBar = new ArrayList<Rectangle>();
 	  ArrayList<ButtonX> settingsButtons = new ArrayList<ButtonX>();
@@ -455,10 +476,10 @@ public class Main extends Application
 	  calTxt.setOpacity(0.5);
 	  calPopUp.add(calTxt);
 	  
-	  EventHandler<MouseEvent> changePrep = new EventHandler<MouseEvent>() 
+	  EventHandler<Event> changePrep = new EventHandler<Event>() 
 	  {
 		  @Override  
-	      public void handle(MouseEvent event) 
+	      public void handle(Event event) 
 		  {  
 			  int index = preps.indexOf(calTxt.getText());
 			  if(index != preps.size()-1)
@@ -515,6 +536,8 @@ public class Main extends Application
 	  calPopUpBtns.add(calSubmitBtn.getButton());
 	  
 	  PopUp calPP = new PopUp(calBtn, 100, calPopUp, calPopUpBtns);
+	  animMenus.add(calPP);
+
 	  calPP.addToGroup(rootMM);
 	  
 	  EventHandler<Event> calSubmitEvent = new EventHandler<Event>() 
@@ -687,6 +710,7 @@ public class Main extends Application
 	  }
 	  	  
 	  DropDown scanDD = new DropDown(scanDropdown, icon2Height, 500, scanDrawerList, scanBSBtns);
+	  animMenus.add(scanDD);
 	  Button scanDropdownBtn = scanDD.getButton();
 	  scanDD.addToGroup(rootMM);	  	  
 	  rootMM.getChildren().add(scanDropdownBtn);
@@ -773,6 +797,9 @@ public class Main extends Application
 		  rootMM.getChildren().add(text);
 		  logs.add(text);
 	  }
+	  	  //Home button
+	  	  ButtonX homeBtn = new ButtonX(Menu.makeButton(iconBox, curPalette.getAcc3Color(), buttonFlashes));
+
 	  
 		  ArrayList<javafx.scene.Node> addToAll = new ArrayList<javafx.scene.Node>();
 		  addToAll.add(topBar);
@@ -784,13 +811,13 @@ public class Main extends Application
 		  addToAll.add(sideLine);
 		  addToAll.add(notifIcon);
 		  addToAll.add(loginIcon);
-		  addToAll.add(loginBtn);
+		  loginBtn.addToArray(addToAll);
 		  addToAll.add(headerIcon);
 		  addToAll.add(aboutBtn);
 		  addToAll.add(notifBtn);
+		  homeBtn.addToArray(addToAll);
 		  
 		  Menu.changeScene(rootMM, addToAll);
-		  stage.setScene(menuScene); 
 		  
 		  headerIcon.toFront();
 		  topBar.toBack();
@@ -813,13 +840,58 @@ public class Main extends Application
 		  SceneControl sc = new SceneControl();
 		  sc.addScene(menuScene, toMenuScreen);
 		  
+		  
+		  //~~~~~~~~~~~~~~~~~~~~~~ LOADING ~~~~~~~~~~~~~~~~~~~~~
+
+		  loadingScene.setFill(curPalette.getBgColor());
+		  stage.setScene(loadingScene); 
+		  stage.show();
+
+		  Text loadTxt = new Text("Loading...");
+		  loadTxt.setFont(curPalette.getTitleFont());
+		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, loadTxt);
+		  loadTxt.setFill(curPalette.getPriColor());
+		  loadTxt.textProperty().bind(cs.valueProperty());
+		  rootLG.getChildren().add(loadTxt);
+		  
+		  loadTxt.textProperty().addListener(new ChangeListener()
+	      {
+	          @Override public void changed(ObservableValue o,Object oldVal, Object newVal)
+	          {
+	        	 	if(newVal.equals("All ready!"))
+		 			{
+	        	 		System.out.println("All ready!");
+	        	 		stage.setScene(menuScene);
+	        	 		loadTxt.textProperty().unbind();
+		 			}
+	          }
+	      });
+		  
+		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ LOG IN ~~~~~~~~~~~~~~~~~~~~~
+		  homeBtn.addAction(new EventHandler<Event>() //kill scan
+				  {
+				    public void handle(Event event)
+				    {
+				    	if(stage.getScene() != menuScene)
+				    	{
+					    	toMenuScreen.handle(event);
+					    	if(ScanManager.liveScan())
+								ScanManager.killScan();
+				    	}
+				    	event.consume();
+				    }
+			  });
+		  
 		  logInScene.setFill(curPalette.getPriColor());
 
 		  //Log in> white Space
 		  Rectangle whiteSpace = Menu.icon(sceneWidth / 3, sceneHeight - topBarrier + 2, 0, topBarrier - 2, 0, curPalette.getBgColor(), curPalette.getLineColor());
 		  whiteSpace.setFill(curPalette.getBgColor());
 		  whiteSpace.setStroke(curPalette.getLineColor());
+		  
+		  //Rat scott image on left
+		  Rectangle ratScot = Menu.icon((int)(whiteSpace.getWidth()*1.2), (int)(whiteSpace.getWidth()*1.2), (int)(whiteSpace.getX()-whiteSpace.getWidth()*0.1), (int)(whiteSpace.getY() + (whiteSpace.getHeight()-whiteSpace.getWidth()*1.2)/2), Menu.getImgPath("Rat-Scott.PNG"));
 		  
 		  //Log in > Username Box
 		  
@@ -854,16 +926,19 @@ public class Main extends Application
 		  Menu.centerText(submitBox, submitText);
 		  submitText.setTextAlignment(TextAlignment.CENTER);
 		  rootLI.getChildren().add(submitText);
-				  
+		  ButtonX loginSubmitBtn = new ButtonX(submitBox, curPalette.getAcc3Color(), buttonFlashes);
+		  loginSubmitBtn.addToGroup(rootLI);
+		  
 		  Rectangle guestBox = Menu.icon((int)(submitBox.getWidth() / 3), iconSize, (int)(whiteSpace.getWidth() + buffer2), sceneHeight - buffer2 - iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
 		  Text guestText = new Text("Back");
 		  guestText.setFont(curPalette.getTitleFont());
 		  guestText.setWrappingWidth(guestBox.getWidth());
+		  guestText.setFill(curPalette.getLineColor());
 		  Menu.centerText(guestBox, guestText);
 		  guestText.setTextAlignment(TextAlignment.CENTER);
 		  
-		  Button guestBtn = Menu.makeButton(guestBox, curPalette.getAcc4Color(), buttonFlashes);
-		  rootLI.getChildren().add(guestBtn);
+		  ButtonX guestBtn = new ButtonX(guestBox, curPalette.getAcc4Color(), buttonFlashes);
+		  guestBtn.addToGroup(rootLI);
 		  
 		  Rectangle signUpBox = Menu.icon((int)(submitBox.getWidth() / 3), iconSize, sceneWidth - (int)(submitBox.getWidth() / 3) - buffer2, sceneHeight - buffer2 - iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
 		  Text signUpText = new Text("Create Account");
@@ -872,30 +947,33 @@ public class Main extends Application
 		  Menu.centerText(signUpBox, signUpText);
 		  signUpText.setTextAlignment(TextAlignment.CENTER);
 		  
-		  Button signUpBtn = Menu.makeButton(signUpBox, curPalette.getAcc4Color(), buttonFlashes);
-		  rootLI.getChildren().add(signUpBtn);
+		  ButtonX signUpBtn = new ButtonX(signUpBox, curPalette.getAcc4Color(), buttonFlashes);
+		  signUpBtn.addToGroup(rootLI);		  
 		  
 		  ArrayList<javafx.scene.Node> addToLogin = new ArrayList<javafx.scene.Node>();
 		  addToLogin.add(whiteSpace);
+		  addToLogin.add(ratScot);
 		  addToLogin.add(usrBox);
 		  addToLogin.add(usrText);
 		  addToLogin.add(pwdText);
 		  addToLogin.add(pwdBox);
 		  addToLogin.add(guestBox);
 		  addToLogin.add(guestText);
+		  guestBtn.addToArray(addToLogin);
 		  addToLogin.add(signUpBox);
 		  addToLogin.add(signUpText);
+		  signUpBtn.addToArray(addToLogin);
 		  addToLogin.add(usrField);
 		  addToLogin.add(pwdField);
 		  
 		  Menu.changeScene(rootLI, addToLogin);
 		  
 		  //Change to login screen
-		  EventHandler<MouseEvent> toLoginScreen = new EventHandler<MouseEvent>() 
+		  EventHandler<Event> toLoginScreen = new EventHandler<Event>() 
 		  {
 			  Scene oldScene = menuScene;
 			  @Override  
-		      public void handle(MouseEvent event) 
+		      public void handle(Event event) 
 			  {  
 				  
 				  if(!stage.getScene().equals(createAcctScene))
@@ -904,25 +982,28 @@ public class Main extends Application
 				  //String path = (((ImageInput)headerIcon.getEffect()).getSource().getUrl());
 				  stage.setScene(logInScene);
 				  Menu.changeScene(rootLI, addToAll);
-				  rootLI.getChildren().remove(loginBtn);
+				  rootLI.getChildren().remove(loginBtn.getButton());
 				  rootLI.getChildren().remove(loginIcon);
 				  rootLI.getChildren().remove(loginBox);
-				  curPalette.changeImg(headerIcon, curPath + "loginIcon.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  
-				  if(!rootLI.getChildren().contains(addToLogin.get(0)))
-					  Menu.changeScene(rootLI, addToLogin);
 				  
-				  signUpBtn.toFront();
-				  guestBtn.toFront();
+				  Menu.changeScene(rootLI, addToLogin);
+				  signUpBtn.getButton().toFront();
+				  guestText.toFront();
+				  guestBtn.getButton().toFront();
 				  
-				  EventHandler<? super MouseEvent> toOldScene = sc.toScene(oldScene);
+				  usrField.clear();
+				  pwdField.clear();
+				  
+				  EventHandler<Event> toOldScene = sc.toScene(oldScene);
 				  if(toOldScene != null)
-					  guestBtn.setOnMouseClicked(toOldScene);
-					
+					  guestBtn.addAction(toOldScene);					
+				  
 				  event.consume();
 		      }    
 		  };  
-		  loginBtn.setOnMouseClicked(toLoginScreen); 
+		  loginBtn.addAction(toLoginScreen); 
 		  sc.addScene(logInScene, toLoginScreen);
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ CREATE ACCOUNT~~~~~~~~~~~~~~~~~~~~~
@@ -942,28 +1023,33 @@ public class Main extends Application
 		  confirmText.setY(topBarrier + buffer2*5 + buffer*2 + iconSize*2);
 		  rootCA.getChildren().add(confirmText);
   
-		  Button backLIBtn = Menu.makeButton(guestBox,  curPalette.getAcc4Color(), buttonFlashes);
-		  rootCA.getChildren().add(backLIBtn);
-		  backLIBtn.setOnMouseClicked(toLoginScreen);
+		  ButtonX backLIBtn = new ButtonX(guestBox,  curPalette.getAcc4Color(), buttonFlashes);
+		  backLIBtn.addToGroup(rootCA);
+		  backLIBtn.addAction(toLoginScreen);
 		  
 		  //Change to Create Account Screen
-		  EventHandler<MouseEvent> toSignUpScreen = new EventHandler<MouseEvent>() 
+		  EventHandler<Event> toSignUpScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
-		      public void handle(MouseEvent event) 
+		      public void handle(Event event) 
 			  {  
 				  stage.setScene(createAcctScene);
 				  Menu.changeScene(rootCA, addToAll);
-				  rootCA.getChildren().remove(loginBtn);
+				  rootCA.getChildren().remove(loginBtn.getButton());
 				  rootCA.getChildren().remove(loginIcon);
 				  rootCA.getChildren().remove(loginBox);
-				  curPalette.changeImg(headerIcon, curPath + "createAcctIcon.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  Menu.changeScene(rootCA, addToLogin);
-				  backLIBtn.toFront();
+				  backLIBtn.getButton().toFront();
+				  
+				  usrField.clear();
+				  pwdField.clear();
+				  confirmField.clear();
+				  
 				  event.consume();
 		      }    
 		  };  
-		  signUpBtn.setOnMouseClicked(toSignUpScreen); 
+		  signUpBtn.addAction(toSignUpScreen); 
 		  sc.addScene(createAcctScene, toSignUpScreen);
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ SCAN ~~~~~~~~~~~~~~~~~~~~~
@@ -995,9 +1081,7 @@ public class Main extends Application
 		  
 		  cancelBtn.addToGroup(rootSC);
 		  
-		  
-		  ArrayList<javafx.scene.Node> scanStuff = new ArrayList<javafx.scene.Node>();
-		  //0: curDir
+		  		  //0: curDir
 		  //1: prog
 		  //2: scanPercent
 		  //3: filesScanned
@@ -1019,7 +1103,6 @@ public class Main extends Application
 		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, curDir);
 		  curDir.setY(topBarrier + (int)(titleSize*3.5));
 		  rootSC.getChildren().add(curDir);
-		  scanStuff.add(curDir); //0
 		  
 		  //this is kinda a mess bc of buggy CSS stuff :(
 		  
@@ -1036,7 +1119,6 @@ public class Main extends Application
 		  
 		  //prog.addToGroup(rootSC);
 		  rootSC.getChildren().add(prog);
-		  scanStuff.add(prog); //1
 		  
 		  //mess ends here!
 		
@@ -1046,7 +1128,6 @@ public class Main extends Application
 		  scanPercent.setX(prog.getLayoutX() + buffer);
 		  scanPercent.setY(curDir.getY());
 		  rootSC.getChildren().add(scanPercent);
-		  scanStuff.add(scanPercent); //2
 		  
 		  Text filesScanned = new Text("0 Files Scanned");
 		  filesScanned.setFont(curPalette.getDefaultFont());
@@ -1056,7 +1137,6 @@ public class Main extends Application
 		  filesScanned.setWrappingWidth(prog.getPrefWidth() - buffer*2);
 		  filesScanned.setTextAlignment(TextAlignment.RIGHT);
 		  rootSC.getChildren().add(filesScanned);
-		  scanStuff.add(filesScanned); //3
 		  
 		  Text ratsFound = new Text("0 Rats Found");
 		  ratsFound.setFont(curPalette.getDefaultFont());
@@ -1066,10 +1146,7 @@ public class Main extends Application
 		  ratsFound.setWrappingWidth(prog.getPrefWidth() - buffer*2);
 		  ratsFound.setTextAlignment(TextAlignment.RIGHT);
 		  rootSC.getChildren().add(ratsFound);
-		  scanStuff.add(ratsFound); //4
 		  
-		  scanStuff.add(cancelText); //5
-		  scanStuff.add(scanTitle); //6
 		  
 		  Rectangle statusIcon = Menu.icon((int)(iconSize*2), (int)(iconSize*2), (int)(sceneWidth/3 - iconSize*2)/2, topBarrier + buffer2, statusIconPath.replace("Big", "Small"));
 		  rootST.getChildren().add(statusIcon);
@@ -1077,88 +1154,177 @@ public class Main extends Application
 		  //Will be ratscot gif
 		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "hamster-wheel.gif");
 		  rootSC.getChildren().add(ratGif);
-		  scanStuff.add(ratGif); //7		  
-		  scanStuff.add(statusIconBig); //8
-		  scanStuff.add(statusIcon); //9
 		  
-		  ScanMonitor.setObjs(scanStuff);
+		  //SCAN FINISHED SCREEN
+		  scanFScene.setFill(curPalette.getBgColor());
+
+		  //Title
+		  Text resultsTitle = new Text("Scan Results:");
+		  resultsTitle.setFont(curPalette.getTitle2Font());
+		  resultsTitle.setFill(curPalette.getAcc3Color());
+		  Menu.centerText(sceneWidth, 0, 0, resultsTitle);
+		  resultsTitle.setY(topBarrier+buffer2*2);
+		  rootSF.getChildren().add(resultsTitle);
 		  
-		  EventHandler<Event> deployScan = new EventHandler<Event>()
+		  //Image
+		  Rectangle resultsIcon = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, statusIconPath);
+		  rootSF.getChildren().add(resultsIcon);
+		  
+		  //Title 2
+		  Text resultsTitle2 = new Text("Results");
+		  resultsTitle2.setFont(curPalette.getTitleFont());
+		  resultsTitle2.setFill(curPalette.getPriColor());
+		  Menu.centerText(sceneWidth, 0, 0, resultsTitle2);
+		  resultsTitle2.setY(resultsTitle.getY() + titleSize*2);
+		  rootSF.getChildren().add(resultsTitle2);
+		  
+		  //Body text
+		  Text resBody = new Text("Results");
+		  resBody.setFont(curPalette.getDefaultFont());
+		  resBody.setFill(curPalette.getLineColor());
+		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, resBody);
+		  resBody.setY(resultsTitle2.getY() + titleSize);
+		  rootSF.getChildren().add(resBody);
+		  
+		  
+		  //Back button
+		  Rectangle finishBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
+		  rootSF.getChildren().add(finishBox);
+		  
+		  Text finishTxt = new Text("Finish");
+		  finishTxt.setFont(curPalette.getTitleFont());
+		  finishTxt.setFill(curPalette.getLineColor());
+		  
+		  ButtonX finishBtn = new ButtonX(finishBox, curPalette.getAcc4Color(), finishTxt, buttonFlashes);
+		  finishBtn.addAction(toMenuScreen);
+		  finishBtn.addToGroup(rootSF);
+		  
+		  //Next button
+		  Rectangle nextBox = Menu.icon(icon2Width/2, iconSize, sceneWidth - icon2Width/2 - buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
+		  
+		  Text nextTxt = new Text("Next");
+		  nextTxt.setFont(curPalette.getTitleFont());
+		  nextTxt.setFill(curPalette.getLineColor());
+		  
+		  ButtonX nextBtn = new ButtonX(nextBox, curPalette.getAcc4Color(), nextTxt, buttonFlashes);
+		  nextBtn.addToGroup(rootSF);
+		  nextBtn.setVisible(false);
+		  
+		  //SCAN FINISHED SCREEN END
+		  
+		  
+	      prog.progressProperty().addListener(new ChangeListener()
+			      {
+			          @Override public void changed(ObservableValue o,Object oldVal, Object newVal)
+			          {
+			        	  scanPercent.setText(Math.round((Double)(newVal)*100) + "%");
+			        	  filesScanned.setText(Scan2.count + " Files Scanned");
+			        	  ratsFound.setText(Scan2.rats + " Rats Found");	
+			          }
+			      });
+	      
+	      curDir.textProperty().addListener(new ChangeListener()
+	      {
+	          @Override public void changed(ObservableValue o,Object oldVal, Object newVal)
+	          {
+	        	  if(curDir.getText().equals("Scan Completed")
+	        			  || curDir.getText().equals("Scan Cancelled"))
+    			  {
+	        		  stage.setScene(scanFScene);
+	        		  Menu.changeScene(rootSF, addToAll);
+			  	      homeBtn.getButton().setVisible(true);
+			  	      
+			  	      resultsTitle.setText(curDir.getText());
+			  	      
+		  			  nextBtn.setVisible(Scan2.rats != 0);
+
+			  	      
+			  	      //No threats found
+			  	      if(Scan2.rats == 0)
+			  	      {
+
+			  	    	  finishTxt.setText("Finish");
+			  	    	  resultsTitle2.setFill(curPalette.getPriColor());
+			  	    	  resultsTitle2.setText("Looks like you're all good!");
+			  	    	  
+			  	    	  resBody.setText(filesScanned.getText() + "\n"
+			  	    	  	+ ratsFound.getText());
+			  	    	  
+			  	    	  curPalette.changeImg(resultsIcon, statusIconPath, true);
+			  	    	  
+			  	    	  //Full scan OR quick scan if status was OK
+			  	    	  if(scanTitle.getText().contains("Full")
+			  	    			  || (scanTitle.getText().contains("Quick") &&
+			  	    					  ((ImageInput)statusIcon.getEffect()).getSource().getUrl().contains("Ok")))
+			  	    	  
+			  	    	  {
+			  	    		  curPalette.changeImg(statusIcon, statusIconPath, true);
+			  	    		  curPalette.changeImg(statusIconBig, statusIconPath, true);
+			  	    	  }
+			  	      }
+			  	      
+			  	      //threats found
+			  	      else
+			  	      {					  	    	  
+			  	    	  finishTxt.setText("Later");
+			  	    	  resultsTitle2.setFill(curPalette.getRed());
+			  	    	  resultsTitle2.setText("We trapped some rats for you!");
+			  	    	  resBody.setText("Don't sweat it!,\n Hit 'Next' and well sort that out real quick.");
+			  	    	  
+			  	    	  curPalette.changeImg(resultsIcon, curPath + "ratCage.png", true);
+			  	    	  curPalette.changeImg(statusIcon, curPath + "statusBadSmall.PNG", true);
+			  	    	  curPalette.changeImg(statusIconBig,curPath + "statusBadBig.PNG", true);
+			  	      }
+    			  }
+	          }
+	      });
+
+  		Scan2.cs =cs;
+
+	      EventHandler<Event> deployScan = new EventHandler<Event>()
 		  {
-			    @Override  
+			    @SuppressWarnings("unchecked")
+				@Override  
 			    public void handle(Event event)
 			    {  
+			    	//Reset values
+			    	
 			    	scanTitle.setText(scanBS.getValue());
 			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
-			    	prog.setProgress(0);
+			    	Scan2 scan = null;
 			    	
-			        // Wrap the operation in a CompletableFuture
-			        CompletableFuture.runAsync(() -> 
-			        {
-			            actionBranch ab = new actionBranch();
-
-			            //Quick Scan
-			            if (scanBS.getValue().contains("Quick")) 
-			            {
-					    	curDir.setText("Starting Scan...");
-			            	//curDir.setText("C:\\Windows\\System32");
-			                try 
-			                {
-			                     ab.actionMethod(1);
-			                } 
-			                catch (IOException | InterruptedException e) 
-			                {
-			                	System.out.println("ERROR");
-			                    e.printStackTrace();
-			                }
-			            }
-			            
-			            //Custom Scan
-			            else if(scanBS.getValue().contains("Custom"))
-			            {
-			            	try 
-			                { 
-			            		System.out.println("dir: " + curDir.getText());
-			            		ab.setPath(curDir.getText());
-			                    ab.actionMethod(4);
-			                } 
-			            	catch (IOException | InterruptedException e)
-			            	{
-			                	System.out.println("ERROR");
-			                    e.printStackTrace();
-			                }
-			            }
-			            //Full scan
-			            else
-			            	try 
-		                {
-		                    ab.actionMethod(4);
-		                } 
-		            	catch (IOException | InterruptedException e)
-		            	{
-		                	System.out.println("ERROR");
-		                    e.printStackTrace();
-		                }
-			            
-			        });
-			       
-			        while(ScanManager.liveScan())
-			        {
-			        	curDir.setText(ScanMonitor.curPath);
-			        }
-			        
+			    	if(scanBS.getValue().contains("Quick"))
+			    	{
+			    		scan = new Scan2(ScanType.QUICK, null);			    		
+			    		System.out.println("Quick Scan");
+		                executorService.execute(scan);
+			    	}
+			    	else if(scanBS.getValue().contains("Custom"))
+			    	{
+			    		scan = new Scan2(ScanType.CUSTOM, ScanManager.custPath);			    		
+			    		System.out.println("Custom Scan");
+		                executorService.execute(scan);
+		                
+			    	}
+			    	else 
+			    	{
+			    		System.out.println("Full Scan");
+			    		scan = new Scan2(ScanType.FULL, null);			    		
+			    	}
+			    	
+			    	curDir.textProperty().bind(scan.messageProperty());
+		  	      	prog.progressProperty().bind(scan.progressProperty());
+		  	      	homeBtn.getButton().setVisible(false);
+		  	      	
+		    		executorService.execute(scan);
 			        event.consume();
 			    }    
 		  };
-
 		  EventHandler<Event> toScanScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event)
-			  {  
-				  cancelText.setText("Cancel");
-				  
-				  
+			  {  				  
 				  if(scanDD.isOpen())
 					  scanDD.getButtonX().getActions().get(0).handle(event);
 				  
@@ -1167,25 +1333,30 @@ public class Main extends Application
 				  {
 					  DirectoryChooser dir = new DirectoryChooser();  
 					  dir.setTitle("Choose a Folder to Scan");
-					  
 					  File dir1 = dir.showDialog(stage);
 					  
 					  if(dir1 != null)
 					  {
-						  curDir.setText(dir1.toString());
+						  ScanManager.custPath = dir1.toString();
 						  System.out.println(dir1.toString()); //TEMP
-						  
 						  //After file is chosen, starts scan process
 						  Menu.changeScene(rootSC, addToAll); //adds objects
 						  //curDir.setText(scanBS.getValue());
-						  curPalette.changeImg(headerIcon, curPath + "scanIcon.PNG", true);
+						  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 						  stage.setScene(scanScene); //changes to scan screen
 						  
 						  //Deploys scan
-						  if(stage.getScene() == scanScene);
+						  try
 						  {
-							System.out.println("Deploying scan...");
-						  	deployScan.handle(event);
+							  if(stage.getScene() == scanScene);
+							  {
+								System.out.println("Deploying scan...");
+							  	deployScan.handle(event);
+							  }
+						  }
+						  catch(NullPointerException e)
+						  {
+							  e.printStackTrace();
 						  }
 					  }
 
@@ -1194,8 +1365,8 @@ public class Main extends Application
 				  else
 				  {
 					  Menu.changeScene(rootSC, addToAll); //adds objects
-					  curDir.setText(scanBS.getValue());
-					  curPalette.changeImg(headerIcon, curPath + "scanIcon.PNG", true);
+					  //curDir.setText(scanBS.getValue());
+					  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 					  stage.setScene(scanScene); //changes to scan screen
 					  if(stage.getScene() == scanScene);
 					  {
@@ -1213,7 +1384,6 @@ public class Main extends Application
 		  sc.addScene(scanScene, toScanScreen);
 		  
 		  
-		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ STATUS ~~~~~~~~~~~~~~~~~~~~~
 		  statusScene.setFill(curPalette.getBgColor());
 		  Line temp = new Line(sceneWidth/3, 0, sceneWidth/3, sceneHeight);
@@ -1229,24 +1399,23 @@ public class Main extends Application
 		  backSTText.setX(backSTBox.getX());
 		  backSTText.setY((int)(sceneHeight-buffer2-titleSize*(3.0/4)));
 		  rootST.getChildren().add(backSTText);
+		  backSTText.setFill(curPalette.getLineColor());
 		  backSTText.setTextAlignment(TextAlignment.CENTER);
 
 		  Button backSTBtn = Menu.makeButton(backSTBox, curPalette.getAcc4Color(), buttonFlashes);
 		  backSTBtn.setOnMouseClicked(toMenuScreen);  
 		  rootST.getChildren().add(backSTBtn);
-  
+
 		  
-		  
-		  
-		  EventHandler<MouseEvent> toStatusScreen = new EventHandler<MouseEvent>() 
+		  EventHandler<Event> toStatusScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
-		      public void handle(MouseEvent event) 
+		      public void handle(Event event) 
 			  {  
 				  
 				  stage.setScene(statusScene);
 				  Menu.changeScene(rootST, addToAll);
-				  curPalette.changeImg(headerIcon, statusIconPath.replace("Big", "Small"), true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  event.consume();
 		      }    
 		  };  
@@ -1261,6 +1430,7 @@ public class Main extends Application
 		  backUPText.setFont(curPalette.getTitleFont());
 		  backUPText.setWrappingWidth(icon2Width/2);
 		  backUPText.setX(backUPBox.getX());
+		  backUPText.setFill(curPalette.getLineColor());
 		  backUPText.setY((int)(sceneHeight-buffer2-titleSize*(3.0/4)));
 		  backUPText.setTextAlignment(TextAlignment.CENTER);
 
@@ -1298,7 +1468,7 @@ public class Main extends Application
 				  
 				  stage.setScene(updateScene);
 				  Menu.changeScene(rootUP, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "updatesIcon.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  if(!rootUP.getChildren().contains(backUPBox))
 				  {
 					  rootUP.getChildren().add(backUPBox);
@@ -1314,31 +1484,29 @@ public class Main extends Application
 		  
 		//~~~~~~~~~~~~~~~~~~~~~~ About ~~~~~~~~~~~~~~~~~~~~~
 		aboutScene.setFill(curPalette.getBgColor());
-		Button backABBtn = Menu.makeButton(backUPBox, curPalette.getAcc4Color(), buttonFlashes);
+		Button backABBtn = Menu.makeButton(backUPBox, curPalette.getAcc4Color(), buttonFlashes);		
 		rootAB.getChildren().add(backABBtn);
 		
 		aboutFill.setFromValue((curPalette.getAcc2Color()));
 		aboutFill.setToValue(curPalette.getLineColor());
 		
-	    aboutBtn.setOnAction(new EventHandler<ActionEvent>() 
-	    {  
+	    EventHandler<Event> toAboutScreen = new EventHandler<Event>()
+		{  
             Scene oldScene = menuScene;
             @Override  
-            public void handle(ActionEvent arg0) 
+            public void handle(Event arg0) 
             {  
             	if(!oldScene.equals(aboutScene))
             		oldScene = stage.getScene();
             	            	
             	aboutFill.play();
             	Color temp = (Color)about.getFill();
-            	
             	aboutFill.setFromValue(aboutFill.getToValue());
             	aboutFill.setToValue(temp);
-            	
             	stage.setScene(aboutScene);
 				Menu.changeScene(rootAB, addToAll);
 				
-				curPalette.changeImg(headerIcon, curPath + "infoIcon.PNG", true);
+				curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				if(!rootAB.getChildren().contains(backUPBox))
 				{
 					rootAB.getChildren().add(backUPBox);
@@ -1357,11 +1525,15 @@ public class Main extends Application
 		            }
 				});
 				backABBtn.setOnMouseClicked(sc.toScene(oldScene));
-				
+				arg0.consume();
             }  
-	    } );  
-	    aboutBtn.toFront();
-		sc.addScene(aboutScene, aboutBtn.getOnMouseClicked());  
+	    };  
+	    
+		ButtonX aboutBtnX = new ButtonX(aboutBtn);
+		aboutBtnX.addAction(toAboutScreen);
+		aboutBtnX.addToGroup(rootMM);
+	    
+		sc.addScene(aboutScene, toAboutScreen);  
 	    
 		Text aboutTitle = new Text("About Us:");
 		aboutTitle.setFont(curPalette.getTitle2Font());
@@ -1380,14 +1552,14 @@ public class Main extends Application
 
 		
 		//~~~~~~~~~~~~~~~~~~~~~~ Notifications ~~~~~~~~~~~~~~~~~~~~~
-		EventHandler<MouseEvent> toNotifScreen = new EventHandler<MouseEvent>() 
+		EventHandler<Event> toNotifScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
-		      public void handle(MouseEvent event) 
+		      public void handle(Event event) 
 			  {  
 				  stage.setScene(notifScene);
 				  Menu.changeScene(rootNO, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "notifIcon.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  event.consume();
 
 		      }    
@@ -1398,12 +1570,10 @@ public class Main extends Application
 		  //~~~~~~~~~~~~~~~~~~~~~~ Layout ~~~~~~~~~~~~~~~~~~~~~
 		  layoutScene.setFill(curPalette.getBgColor());
 		  		  
-		
-		  Rectangle backLOBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
-		  //ArrayList<javafx.scene.Node> backLOBtn = Menu.makeButton(backLOBox, curPalette.getAcc4Color(), buttonFlashes, toMenuScreen, "Back", curPalette.getTitleFont());
-		 
+		  Rectangle backLOBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());		 
 		  Text backLOTxt = new Text("Back");
 		  backLOTxt.setFont(curPalette.getTitleFont());
+		  backLOTxt.setFill(curPalette.getLineColor());
 		  ButtonX backLOBtn = new ButtonX(backLOBox, curPalette.getAcc4Color(), backLOTxt, buttonFlashes);
 		  backLOBtn.addToGroup(rootLO);
 		  backLOBtn.addAction(toMenuScreen);
@@ -1513,7 +1683,7 @@ public class Main extends Application
 				  stage.setScene(layoutScene);
 				  rootLO.requestFocus();
 				  Menu.changeScene(rootLO, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "layoutIcon.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  scanDropdown.toFront();
 				  scanDropdownBtn.toFront();
 				  event.consume();
@@ -1523,6 +1693,55 @@ public class Main extends Application
 		  //settingsButtons.get(0).setOnMouseClicked(toLayoutScreen);
 		  settingsButtons.get(0).addAction(toLayoutScreen);
 		  sc.addScene(layoutScene, toLayoutScreen);  
+		  
+		  							
+		  Toggle animTog= new Toggle(icon2Width/2, iconSize, sceneWidth/4, sceneHeight-buffer2-iconSize);
+		  animTog.setColors(curPalette.getBgColor(), curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
+		  animTog.setText("Off", "On", curPalette.getDefaultFont());
+		  animTog.addToGroup(rootLO);
+		  animTog.addAction(new EventHandler<Event>()
+			{
+			  @Override  
+		      public void handle(Event event) 
+			  {
+				  for(int i = 0; i < animMenus.size(); i++)
+				  {
+					  animMenus.get(i).toggleAnimations();
+				  }
+			  }
+			});
+		  
+		  Text animTogLabel = new Text("Animations");
+		  animTogLabel.setFont(curPalette.getSubTitleFont());
+		  animTogLabel.setFill(curPalette.getLineColor());
+		  Menu.centerText(icon2Width/2, sceneWidth/4, (int)(animTog.getBg().getY()-buffer/2), animTogLabel);
+		  rootLO.getChildren().add(animTogLabel);
+  	
+		  //Rectangle mark = Menu.icon(icon2Height*2, icon2Height*2, 0, 0, curPath + "markiplier.jpg");
+		  //rootMM.getChildren().add(mark);		  
+
+		  
+		  //Close program
+		  stage.setOnCloseRequest(new EventHandler<WindowEvent>()
+		  {
+	          public void handle(WindowEvent event)
+	          {
+	              System.out.println("Exiting...");
+	  	          stage.close();
+	  			  try
+	  			  {
+					Runtime.getRuntime().exec("Taskkill /IM clamd.exe /F");
+					Runtime.getRuntime().exec("Taskkill /IM clamdscan.exe /F");
+
+	  			  }
+	  			  catch (IOException e)
+	  			  {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+	  			  }
+	          	}
+	      });   
+		  
   	}  	
   
   

@@ -2,13 +2,14 @@ package Backend.Scans;
 import java.io.*;
 import java.util.ArrayList;
 
+import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
 
-public class CustomScan 
+public class CustomScan extends Task
 {
-    private ArrayList<String> custArray; //= new ArrayList<String>();
-    private String destinationFileName;//="C:\\Users\\Daniel\\eclipse-workspace\\Rat_Trap\\src\\Custom.tmp";
+    private static ArrayList<String> custArray = new ArrayList<String>();
+    private static String destinationFileName;//="C:\\Users\\Daniel\\eclipse-workspace\\Rat_Trap\\src\\Custom.tmp";
     
     private File file; //= new File(destinationFileName); //directory to scan i think?
     
@@ -17,12 +18,18 @@ public class CustomScan
     
     public CustomScan()
     {
-    	custArray = new ArrayList<String>();
+    	
     }
     
     public CustomScan(String path)
     {
+    	
+    }
+    
+    public static void setPath(String path)
+    {
     	custArray = new ArrayList<String>();
+
     	destinationFileName = path;
     	custArray.add(path);
     }
@@ -89,4 +96,11 @@ public class CustomScan
             e.printStackTrace();
         }
     }
+
+	@Override
+	protected Object call() throws Exception
+	{
+    	scanFiles();
+		return null;
+	}
 }

@@ -7,9 +7,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.text.Text;
 
 public class ScanMonitor 
-{
-	public static ReentrantLock lock = new ReentrantLock();
-	
+{	
 	private static Text curDir;
 	private ProgressBar prog;
 	private Text scanPercent;
@@ -18,7 +16,7 @@ public class ScanMonitor
 	//5: cancelText
 	//6: scanTitle
 	
-	public static String curPath;
+	private static String curPath;
 	
 	public static void setObjs(ArrayList<javafx.scene.Node> objects)
 	{
@@ -30,20 +28,13 @@ public class ScanMonitor
 		return curDir;
 	}
 	
+	public static String getPath()
+	{
+		return curPath;
+	}
+	
 	public static void setDir(String path)
 	{
-		/*System.out.println("setting dir");
-		try
-		{
-			lock.lock();
-			curDir.setText(path);
-			
-		}
-		finally
-		{
-			lock.unlock();
-		}
-		System.out.println("dir set");*/
 		curPath = path;
 
 	}
