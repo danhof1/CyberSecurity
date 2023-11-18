@@ -6,6 +6,7 @@ public class ratBooter {
 	public void bootRat() throws IOException, InterruptedException {
 		actionBranch ab = new actionBranch();
 		ab.actionMethod(13);
+<<<<<<< HEAD
 		clamstart cs = new clamstart();
 		  Thread clamThread = new Thread(() -> {
 	          try {
@@ -16,6 +17,9 @@ public class ratBooter {
 	      });
 		  clamThread.start();
 		  clamThread.join();
+=======
+		ab.actionMethod(0);
+>>>>>>> ab255db1312f2e867005c54eca788cfed00222ca
 	}
  
 }

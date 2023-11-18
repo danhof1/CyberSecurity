@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 package Backend.MainThings;
 
+=======
+>>>>>>> ab255db1312f2e867005c54eca788cfed00222ca
 import java.io.File;
 import java.io.IOException;
 
