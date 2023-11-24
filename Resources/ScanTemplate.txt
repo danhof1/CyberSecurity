@@ -1,0 +1,12 @@
+Scan Log for: 
+
+Scan Completed:
+
+Files Scanned: 
+Unknown Files: 
+Rats Found: 
+Low Severity: 
+Medium Severity: 
+High Severity: 
+
+//Rats Found (format --> filepath: platform.category.name-signatureId-revision FOUND)
