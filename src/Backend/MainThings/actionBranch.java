@@ -82,7 +82,7 @@ public class actionBranch
             case 12:
             	Scheduler time6 = new Scheduler();
             	ScheduleMethods time7 = new ScheduleMethods();
-            	time6.Schedule();
+            	//time6.Schedule();
             	time7.viewSchedule();
             	break;
             case 13:

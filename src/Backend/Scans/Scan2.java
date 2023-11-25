@@ -142,11 +142,11 @@ public class Scan2 extends Task
             proc.waitFor();
         }
         System.out.println("Done!");
-        updateMessage("Scan Completed");
         
         //Write log
         if(!cancelled)
         {
+            updateMessage("Scan Completed");
         	int[] stats = {count, unknown, rats, ratInfo[0], ratInfo[1], ratInfo[2]};
         	log.writeLog(true, stats);
         }
@@ -158,6 +158,8 @@ public class Scan2 extends Task
 	@Override
 	protected Object call() throws Exception
 	{
+    	updateProgress(0, 10);
+
     	ScanManager.startScan();
     	System.out.println("Calling Scan");
     	//Gets total size

@@ -10,14 +10,17 @@ public class actionMap
 
 	
 	public actionMap()
-	{
-	    matchUps2.put("Daily", 1);
-	    matchUps2.put("Weekly", 7);
-	    matchUps2.put("Monthly", 30);
+	{	
+	    matchUps2.put("ONCE", 0);
+	    matchUps2.put("DAILY", 1);
+	    matchUps2.put("WEEKLY", 7);
+	    matchUps2.put("MONTHLY", 30);
 	}
-	public int chooseRecurrence(String Recurrence) {
-	    
-	    return matchUps2.get(Recurrence);
+	public int chooseRecurrence(String Recurrence)
+	{			
+		Integer num = matchUps2.get(Recurrence);
+		
+	    return num;
 	   //matchUps.put("Backup", ###);
 	}
 }

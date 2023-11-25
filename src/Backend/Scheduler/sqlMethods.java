@@ -62,18 +62,20 @@ public class sqlMethods
 	public ArrayList<String[]> toArray()
 	{
 		try (Connection connection = DriverManager.getConnection(jdbcURL);
-		         Statement statement = connection.createStatement()) {
-	        Class.forName("org.sqlite.JDBC"); // Load the JDBC driver
+		         Statement statement = connection.createStatement()){
 	        
-	        String sql = "Select * From Schedule";
-
-	        //output array
-	        ArrayList<String[]> arr = new ArrayList<String[]>();
+			Class.forName("org.sqlite.JDBC"); // Load the JDBC driver
 	        
+	        String sql = " SELECT * FROM Schedule ORDER BY date_time";
 
 	        ResultSet result = statement.executeQuery(sql);
 	        
-	        while (result.next()) {
+	        //output array
+	        ArrayList<String[]> arr = new ArrayList<String[]>();
+	        
+	        
+	        while (result.next())
+	        {
 	            String date_time = result.getString("date_time");
 	            String activity = result.getString("activity");
 	            String recurrence = result.getString("recurrence");

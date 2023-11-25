@@ -27,6 +27,7 @@ import Backend.Scans.ScanManager;
 import Backend.Scans.StatusCheck.Severity;
 import Backend.Scans.StatusInfo;
 import Backend.Scheduler.ScheduleMethods;
+import Backend.Scheduler.Scheduler;
 //Scene stuff
 import javafx.scene.Group; 
 import javafx.scene.Scene;
@@ -108,7 +109,7 @@ public class Main extends Application
 	  actionBranch ab = new actionBranch();
 	 
 	  //Starts clamav engine
-	  ExecutorService executorService = Executors.newFixedThreadPool(3); //number of threads?
+	  ExecutorService executorService = Executors.newFixedThreadPool(5); //number of threads?
 	  freshClam myFresh = new freshClam();	  
       executorService.execute(myFresh);
       clamstart cs = new clamstart();
@@ -116,7 +117,7 @@ public class Main extends Application
       
 	  //Variables > STAGE
 	  stage.setResizable(false);
-	  String verNum = "1.07.00";
+	  String verNum = "1.08";
 	
 	  stage.setTitle("R.A.T. Trap Antivirus v" + verNum);
 	
@@ -828,8 +829,8 @@ public class Main extends Application
 					  str = "Backup";
 					  
 					  String path = new String();
-					  if(strArr[4].length() > 10)
-						  path = "..." + strArr[4].substring(strArr[4].length() - 11);
+					  if(strArr[4].length() > 20)
+						  path = "..." + strArr[4].substring(strArr[4].length() - 21);
 					  else
 						  path = strArr[4];
 					  
@@ -850,8 +851,8 @@ public class Main extends Application
 					  	case CUSTOM:
 					  		str = "Custom Scan";
 					  		String path = new String();
-							  if(strArr[4].length() > 10)
-								  path = "..." + strArr[4].substring(strArr[4].length() - 11);
+							  if(strArr[4].length() > 20)
+								  path = "..." + strArr[4].substring(strArr[4].length() - 21);
 							  else
 								  path = strArr[4];
 							  str += " " + path;
@@ -926,7 +927,9 @@ public class Main extends Application
 				  Text entry = new Text(str);
 				  entry.setFont(curPalette.getDefaultFont());
 				  entry.setFill(curPalette.getLineColor());
-				  Menu.centerText((int)calDiv1.getStartX(), 0, yPos, entry);
+				  entry.setX(buffer2);
+				  entry.setWrappingWidth(calDiv1.getStartX() - buffer2 - curPalette.getTitle2Font().getSize()*1.5);
+				  entry.setY(yPos);
 				  rootCL.getChildren().add(entry);
 				  
 				  Rectangle delEntryBox = Menu.icon(titleSize, titleSize, (int)(calDiv1.getStartX() - titleSize*2), yPos - 3*titleSize/4, 10, curPalette.getRed(), curPalette.getLineColor());
@@ -980,7 +983,8 @@ public class Main extends Application
 				  strArr[1] = null;
 				  
 				  //Args
-				  strArr[2] = curPathTxt.getText();
+				  if(curPathTxt.getText().equals("No files chosen"))
+					  strArr[2] = curPathTxt.getText();
 			  }
 			  else
 			  {
@@ -1779,12 +1783,17 @@ public class Main extends Application
 		  
 		  //SCAN FINISHED SCREEN END
 		  
-		  
 	      prog.progressProperty().addListener(new ChangeListener()
 			      {
 			          @Override public void changed(ObservableValue o,Object oldVal, Object newVal)
 			          {
-			        	  scanPercent.setText(Math.round((Double)(newVal)*100) + "%");
+			        	  String percent = ((Double)newVal) * 100 + "";
+			        	  int index = percent.indexOf('.') + 3;
+			        	  
+			        	  if(index < percent.length())
+			        		  percent = percent.substring(0, index);
+			        	  
+			        	  scanPercent.setText(percent + "%");
 			        	  filesScanned.setText(Scan2.count + " Files Scanned");
 			        	  ratsFound.setText(Scan2.rats + " Rats Found");	
 			          }
@@ -1851,9 +1860,9 @@ public class Main extends Application
     			  }
 	          }
 	      });
-
-  		Scan2.cs =cs;
-
+	      
+	      Scan2.cs = cs;
+	      
 	      EventHandler<Event> deployScan = new EventHandler<Event>()
 		  {
 			    @SuppressWarnings("unchecked")
@@ -1870,13 +1879,13 @@ public class Main extends Application
 			    	{
 			    		scan = new Scan2(ScanType.QUICK, null);			    		
 			    		System.out.println("Quick Scan");
-		                executorService.execute(scan);
+		                //executorService.execute(scan);
 			    	}
 			    	else if(scanBS.getValue().contains("Custom"))
 			    	{
 			    		scan = new Scan2(ScanType.CUSTOM, ScanManager.custPath);			    		
 			    		System.out.println("Custom Scan");
-		                executorService.execute(scan);
+		                //executorService.execute(scan);
 		                
 			    	}
 			    	else 
@@ -1956,6 +1965,91 @@ public class Main extends Application
 		  		  
 		  sc.addScene(scanScene, toScanScreen);
 		  
+		  
+		  //SCHEDULER
+		  Scheduler schedule = new Scheduler();
+		  executorService.execute(schedule);
+		  
+		  Text schedTxt = new Text();
+		  schedTxt.setX(sceneWidth/4);
+		  schedTxt.setY(buffer2);
+		 
+		  schedTxt.textProperty().bind(schedule.messageProperty());
+		  
+		  //monitors for scheduled events
+		  schedTxt.textProperty().addListener(new ChangeListener()
+	      {
+	          @Override public void changed(ObservableValue o,Object oldVal, Object newVal)
+	          {  
+	        	  	try
+	        	  	{
+	        	  		//get scan type
+	        	  		ScanType st = ScanType.valueOf((String)newVal);
+	        	  		
+	        	  		//if another scan is active or loading sequence hasn't finished
+	        	  		if(ScanManager.liveScan() || !loadTxt.getText().contains("ready"))
+	        	  		{
+	        	  			System.out.println("Cannot start scheduled event at this time");
+	        	  			return;
+	        	  		}
+	  	        	  
+	        	  		
+	        	  		//title
+	        	  		
+	        	  		//change scene
+	        	  		 Menu.changeScene(rootSC, addToAll); //adds objects
+	        	  		 curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+	        	  		 stage.setScene(scanScene); //changes to scan screen
+	        	  		 
+	        	  		 //start scan
+	        	  		 //if(stage.getScene() == scanScene);
+	        	  		 //{
+	        	  			 System.out.println("Deploying scheduled scan...");
+	        	  			 
+	        	  			//Reset values
+	     			    	
+	     			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
+	     			    	Scan2 scan = null;
+	     			    	
+	     			    	//chose scan
+	     			    	switch(st)
+	     			    	{
+	     			    		case QUICK:
+		     			    		System.out.println("Quick Scan");
+		     			    		scanTitle.setText("Quick Scan");
+		     			    		scan = new Scan2(ScanType.QUICK, null);			    		
+	     			    			break;
+	     			    			
+	     			    		case CUSTOM:
+		     			    		System.out.println("Custom Scan");
+		     			    		scanTitle.setText("Custom Scan");
+	     			    			scan = new Scan2(ScanType.CUSTOM, ScanManager.custPath);			    		
+	     			    			break;
+	     			    			
+	     			    		default:
+	     			    			System.out.println("Full Scan");
+		     			    		scanTitle.setText("Full Scan");
+		     			    		scan = new Scan2(ScanType.FULL, null);	
+	     			    			break;
+	     			    	}
+	     			    	
+	     			    	curDir.textProperty().bind(scan.messageProperty());
+	     		  	      	prog.progressProperty().bind(scan.progressProperty());
+	     		  	      	homeBtn.getButton().setVisible(false);
+	     		  	      	
+	     		    		executorService.execute(scan);
+	        	  		 //}    
+	        	  	}
+	        	  		
+	        	  	catch (IllegalArgumentException e)
+	        	  	{
+	        	  		System.out.println("NO EVENT");
+	        	  	}
+	          }
+	      });
+		  
+		  rootMM.getChildren().add(schedTxt);
+
 		  
 		  //~~~~~~~~~~~~~~~~~~~~~~ STATUS ~~~~~~~~~~~~~~~~~~~~~
 		  //Variables
