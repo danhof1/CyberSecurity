@@ -87,7 +87,7 @@ public class Scan2 extends Task
     
         //Updates message
         cs.messageProperty().addListener((observable, oldValue, newValue) ->
-    	{
+    	{    		
     		int start = newValue.indexOf("C:");
         	int end = newValue.lastIndexOf(":");
         	
@@ -122,8 +122,9 @@ public class Scan2 extends Task
         for (int i = 0; i < filePaths.size(); i++) 
         {        	
             //Runs clamdscan
-            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
-                    
+            //Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
+            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --move=\"" + System.getProperty("user.dir") + "\\Quarantine\"" + filePaths.get(i));
+        	
             //Quits scan
             if(!ScanManager.liveScan())
             {

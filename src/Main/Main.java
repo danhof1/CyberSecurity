@@ -28,6 +28,9 @@ import Backend.Scans.StatusCheck.Severity;
 import Backend.Scans.StatusInfo;
 import Backend.Scheduler.ScheduleMethods;
 import Backend.Scheduler.Scheduler;
+import Backend.Scheduler.actionMap;
+import Backend.Scheduler.sqlMethods;
+import BigShot.PostScan;
 //Scene stuff
 import javafx.scene.Group; 
 import javafx.scene.Scene;
@@ -72,7 +75,8 @@ import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
-
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 //Images
 import javafx.scene.effect.ImageInput;  
 import javafx.scene.image.Image;  
@@ -242,7 +246,21 @@ public class Main extends Application
 	  
 	  ArrayList<AnimatedMenu> animMenus = new ArrayList<AnimatedMenu>();
 	  
-	 
+	  //Sound effects	  
+	  Sfxtend sfx = new Sfxtend();
+	  sfx.setVolume(0.5);
+	  sfx.addSound("ding", "sounds/select.wav");
+	  sfx.addSound("alarm", "sounds/alarm.wav");
+	  sfx.addSound("delete", "sounds/delete.wav");
+	  sfx.addSound("deleteAll", "sounds/deleteAll.wav");
+	  sfx.addSound("err", "sounds/err.wav");
+	  sfx.addSound("exit", "sounds/exit.wav");
+	  sfx.addSound("meow", "sounds/meow.wav");
+	  sfx.addSound("slide", "sounds/slide.wav");
+	  sfx.addSound("slide2", "sounds/slide2.wav");
+
+	  
+	  
 	  
 	  //~~~~~~~~~~~~~~~~~~~~~~ MAIN MENU ~~~~~~~~~~~~~~~~~~~~~
 	  //COMPOSITION:
@@ -284,6 +302,7 @@ public class Main extends Application
 	  int buffer2 = (barrier1 - icon2Height) / 2;
 	  int icon2Width = barrier2 - barrier1 - buffer2*2;
 
+	  
 	  //startx, starty, endx, endy
 	  Line line = new Line(0, topBarrier-1, barrier1-1, topBarrier-1);
 	  line.setStroke(curPalette.getLineColor());
@@ -294,6 +313,11 @@ public class Main extends Application
 	  ArrayList<ButtonX> bottomButtons = new ArrayList<ButtonX>();
 	  ArrayList<FillTransition> buttonFlashes = new ArrayList<FillTransition>();
 
+	  //error popup
+	  int[] errNums = {sceneWidth, sceneHeight, (int)(1.5*icon2Width/4)};
+	  PopUp unimplementedErr = errorMessage("This method hasn't been implemented yet, try again later.", errNums, curPalette, buttonFlashes);
+	  animMenus.add(unimplementedErr);
+	  
 	  for(int i = 0; i < 4; i++) 
 	  {
 		  int w = (int)((sceneWidth - barrier1) / 4) + 2;
@@ -1091,11 +1115,16 @@ public class Main extends Application
 		  @Override  
 	      public void handle(Event event) 
 		  {  			
-			  DirectoryChooser dir = new DirectoryChooser();  
+			  /*DirectoryChooser dir = new DirectoryChooser();  
 		      dir.setTitle("Choose a Folder to Skip When Scanning");
 
 		      File dir1 = dir.showDialog(stage);
-		      System.out.println(dir1.toString()); //TEMP
+		      System.out.println(dir1.toString()); //TEMP*/
+			  
+			  unimplementedErr.addToGroup(rootMM);
+			  unimplementedErr.getAnimation().handle(event);
+			  sfx.playSound("err");
+			  
 	          event.consume();
 		  }
 	  };
@@ -1244,37 +1273,27 @@ public class Main extends Application
 	
 	  //Backup stuff
 	  
+	  
 	  EventHandler<Event> fileBackup = new EventHandler<Event>() 
 	  {	  
 		  @Override  
 	      public void handle(Event event) 
 		  {  			
-			  FileChooser file = new FileChooser();  
+			  /*FileChooser file = new FileChooser();  
 	          file.setTitle("Choose Files to Backup");
 
 	          List<File> files = file.showOpenMultipleDialog(stage);
-	          System.out.println(files); //TEMP
-	          
+	          System.out.println(files); //TEMP*/
+			  unimplementedErr.addToGroup(rootMM);
+			  unimplementedErr.getAnimation().handle(event);
+			  sfx.playSound("err");
+			  
 	          event.consume();
 		  }
 	  };
 	  actionButtons.get(2).addAction(fileBackup);
 	  
-	  EventHandler<Event> fileQuarentine = new EventHandler<Event>() 
-	  {	  
-		  @Override  
-	      public void handle(Event event) 
-		  {  			
-			  FileChooser file = new FileChooser();  
-	          file.setTitle("Choose Files to Quarentine");
-
-	          List<File> files = file.showOpenMultipleDialog(stage);
-	          System.out.println(files); //TEMP
-	          
-	          event.consume();
-		  }
-	  };
-	  actionButtons.get(1).addAction(fileQuarentine);
+	 
 	  
 	  //Main Menu > Graphics > STATUS
 	  Rectangle statusIconBig = Menu.icon(barrier3 - barrier2 - buffer2*2, barrier3 - barrier2 - buffer2*2, barrier2 + buffer2, topBarrier + buffer2, statusIconPath);
@@ -1334,7 +1353,7 @@ public class Main extends Application
 		  addToAll.add(aboutIcon);
 		  //addToAll.add(loginBox);
 		  addToAll.add(iconBox);
-		  addToAll.add(sideLine);
+		  //addToAll.add(sideLine);
 		  //addToAll.add(notifIcon);
 		  //addToAll.add(loginIcon);
 		  //loginBtn.addToArray(addToAll);
@@ -1352,11 +1371,48 @@ public class Main extends Application
 		  FileX logInfo = new FileX("Resources/LogInfo.txt");
 		  
 		  logInfo.parse();
+		  
 		  for(int i = 0; i < 3; i++)
 		  {
 			  String str = logInfo.readLine(i+1);
-			  str = str.substring(str.indexOf('\t')+1);
-			  logs.get(i).setText(str);
+
+			  if(str.contains("Quarantined"))
+			  {
+				  int num = new File("Quarantine").list().length;
+				  logs.get(i).setText(num + "");
+				  
+				  str = str.substring(0, str.indexOf('\t')+1) + num;
+				  logInfo.writeLine(str, i+1);
+				  logInfo.writeFile();
+			  }
+			  else if (str.contains("Next"))
+			  {
+				  	sqlMethods mySQL = new sqlMethods();
+
+			    	//Get next event params
+			    	String recentAct = mySQL.mostRecentACT();
+			    	if(recentAct == null)
+			    	{
+			    		logs.get(i).setText("N/A");
+			    	}
+			    	else if(!recentAct.contains("BACKUP"))
+			    	{
+			    		String recentDate = mySQL.MostRecentDT();
+			    		String time = displayTime2(recentDate);
+			    		
+			    		logs.get(i).setText(time);
+			    		
+			    		str = str.substring(0, str.indexOf('\t')+1) + time;
+			    		logInfo.writeLine(str, i+1);
+			    		logInfo.writeFile();
+			    		
+			    	}
+			  }
+			  else
+			  {
+				  str = str.substring(str.indexOf('\t')+1);
+				  logs.get(i).setText(str);
+			  } 
 		  }
 		  
 		  EventHandler<Event> toMenuScreen = new EventHandler<Event>() 
@@ -1377,8 +1433,43 @@ public class Main extends Application
 				  for(int i = 0; i < 3; i++)
 				  {
 					  String str = logInfo.readLine(i+1);
-					  str = str.substring(str.indexOf('\t')+1);
-					  logs.get(i).setText(str);
+					  
+					  if(str.contains("Quarantined"))
+					  {
+						  int num = new File("Quarantine").list().length;
+						  logs.get(i).setText(num + "");	
+						  
+						  str = str.substring(0, str.indexOf('\t')+1) + num;
+						  logInfo.writeLine(str, i+1);
+						  logInfo.writeFile();
+					  }
+					  else if (str.contains("Next"))
+					  {
+						  	sqlMethods mySQL = new sqlMethods();
+
+					    	//Get next event params
+					    	String recentAct = mySQL.mostRecentACT();
+					    	if(recentAct == null)
+					    	{
+					    		logs.get(i).setText("N/A");
+					    	}
+					    	else if(!recentAct.contains("BACKUP"))
+					    	{
+					    		String recentDate = mySQL.MostRecentDT();
+					    		String time = displayTime2(recentDate);
+					    		
+					    		logs.get(i).setText(time);
+					    		
+					    		str = str.substring(0, str.indexOf('\t')+1) + time;
+					    		logInfo.writeLine(str, i+1);
+					    		logInfo.writeFile();
+					    	}
+					  }
+					  else
+					  {
+						  str = str.substring(str.indexOf('\t')+1);
+						  logs.get(i).setText(str);
+					  } 
 				  }
 				  
 				  
@@ -1390,6 +1481,38 @@ public class Main extends Application
 		  sc.addScene(loadingScene, null);
 		  backCalBtn.addAction(toMenuScreen);
 		  backCalBtn.addToGroup(rootCL);
+		  
+		  EventHandler<Event> fileQuarentine = new EventHandler<Event>() 
+		  {	  
+			  @Override  
+		      public void handle(Event event) 
+			  {  			
+				  FileChooser file = new FileChooser();  
+		          file.setTitle("Choose Files to Quarentine");
+
+		          List<File> files = file.showOpenMultipleDialog(stage);
+		          System.out.println(files); //TEMP
+		          
+		          for(File rat : files)
+		          {
+	        		  if(!rat.renameTo(new File("Quarantine/" + rat.getName())))
+	        		  {
+	        			  unimplementedErr.addToGroup(rootMM);
+	        			  unimplementedErr.getAnimation().handle(event);
+	        			  sfx.playSound("err");
+	        			  break;
+	        		  }
+	        		  else
+	        		  {
+	        			  StatusInfo.addRat(rat.getAbsolutePath() + "\tQuarantined by user\tMEDIUM");
+	        		  }
+		          }
+		          int num = new File("Quarantine").list().length;
+				  logs.get(2).setText(num + "");
+		          event.consume();
+			  }
+		  };
+		  actionButtons.get(1).addAction(fileQuarentine);
 		  
 		  EventHandler<Event> toCalScreen = new EventHandler<Event>() 
 		  {
@@ -1432,6 +1555,8 @@ public class Main extends Application
 		 			{
 	        	 		System.out.println("All ready!");
 	        	 		stage.setScene(menuScene);
+
+	        	 		sfx.playSound("ding");
 	        	 		loadTxt.textProperty().unbind();
 		 			}
 	          }
@@ -1826,7 +1951,8 @@ public class Main extends Application
 			  	      //No threats found
 			  	      if(Scan2.rats == 0)
 			  	      {
-
+			  	    	  sfx.playSound("ding");
+			  	    	  
 			  	    	  finishTxt.setText("Finish");
 			  	    	  resultsTitle2.setFill(curPalette.getPriColor());
 			  	    	  resultsTitle2.setText("Looks like you're all good!");
@@ -1846,7 +1972,8 @@ public class Main extends Application
 			  	      
 			  	      //threats found
 			  	      else
-			  	      {					  	    	  
+			  	      {		
+			  	    	  sfx.playSound("alarm");
 			  	    	  finishTxt.setText("Later");
 			  	    	  resultsTitle2.setFill(curPalette.getRed());
 			  	    	  resultsTitle2.setText("We trapped some rats for you!");
@@ -1973,7 +2100,8 @@ public class Main extends Application
 		  Text schedTxt = new Text();
 		  schedTxt.setX(sceneWidth/4);
 		  schedTxt.setY(buffer2);
-		 
+		  schedTxt.setVisible(false);
+		  
 		  schedTxt.textProperty().bind(schedule.messageProperty());
 		  
 		  //monitors for scheduled events
@@ -2252,17 +2380,22 @@ public class Main extends Application
 
 				  if(StatusInfo.getTotalRats() > 0)
 				  {
+					  ratTitle.setFill(curPalette.getAcc3Color());
 					  curPalette.changeImg(statusIcon, (statusIconPath.replace("Good", "Bad")).replace("Big", "Small"), true);
 					  curPalette.changeImg(statusIconBig, statusIconPath.replace("Good", "Bad"), true);
+				  
+					  delAllBtn.setVisible(true);
 				  }
 				  else
 				  {
 					  ratTitle.setText("No Rats Found");
+					  ratTitle.setFill(curPalette.getSecColor());
 					  ratDesc.setText("You're all good! Come back here once we've trapped some Rats for you.");
 					  sevTxt.setText("");
 					  ratPath.setText("");
 					  curPalette.changeImg(statusIcon, (statusIconPath.replace("Bad", "Good")).replace("Big", "Small"), true);
 					  curPalette.changeImg(statusIconBig, statusIconPath.replace("Bad", "Good"), true);
+					  delAllBtn.setVisible(false);
 
 					  if(!bs.isEmpty())
 					  {
@@ -2294,6 +2427,8 @@ public class Main extends Application
 				  for(int i = 0; i < ratSelect.size(); i++)
 				  {
 					  final int index = i;
+					
+					  //Add selecting rat events
 					  ratSelect.getButtonXs().get(i).addAction((new EventHandler<Event>()
 					  {
 						  @Override  
@@ -2338,18 +2473,18 @@ public class Main extends Application
 								  desc = "We think we trapped a Rat in the above file";
 							  
 							  ratDesc.setText(desc);
-							  
+							  event.consume();
 						  }
 					  }
 					 ));
 				  }
-				  if(ratTitle.getText().isBlank())
+				  /*if(ratTitle.getText().isBlank())
 				  {
 					  Text txt = (Text)ratSelect.getComponents().get(0);
 					  txt.setFill(curPalette.getLineColor());
 					  txt.setUnderline(false);
 					  
-				  }
+				  }*/
 						  
 				  bs.add(ratSelect);				  
 				  ratSelect.addToGroup(rootST);
@@ -2366,18 +2501,20 @@ public class Main extends Application
 					  elipses.setVisible(false);
 				  
 				  
-				  if(StatusInfo.getTotalRats() != 1)
+				  /*if(StatusInfo.getTotalRats() != 1)
 					  scanActions.setVisible(false);
 				  else // only one rat
 				  {
 					  curRat.setRat(rats.get(0).getId());
 
-				  }
+				  }*/
+				  ratSelect.getButtonXs().get(0).getActions().get(1).handle(event);
 				  
 				  event.consume();
 			  }  
 		  };
 		  
+		  PostScan ps = new PostScan();
 		  
 		  //Remove rat from statusinfo IMPORTANT
 		  EventHandler<Event> removeRat = new EventHandler<Event>() 
@@ -2398,6 +2535,8 @@ public class Main extends Application
 			  }
 		  };
 		  
+		  
+		  
 		  //Delete rat IMPORTANT
 		  delBtn.addAction((new EventHandler<Event>()
 		  {
@@ -2406,7 +2545,35 @@ public class Main extends Application
 			  {
 				  System.out.println("Deleting " + curRat.getFilePath() + " -- " + curRat.getCategory());
 				  
-				  removeRat.handle(event);
+				  
+				  if(curRat.getId() == null)
+				  {
+					  System.out.println("ERR, ratId is null");
+					  sfx.playSound("err");
+				  }
+				  else
+				  {
+					  try
+					  {
+						  if(ps.deleteOne(curRat.getFilePath()))
+						  {
+							  sfx.playSound("delete");
+							  StatusInfo.removeRat(curRat.getId());
+						  }
+						  else
+						  {
+							  sfx.playSound("err");
+							  System.out.println("Error deleting file " + curRat.getFilePath());
+						  }
+
+					  }
+					  catch (IOException | InterruptedException e)
+					  {
+						  sfx.playSound("err");
+						  e.printStackTrace();
+					  }
+					  StatusInfo.refresh();
+				  }				  
 				  event.consume();
 			  }
 		  }));
@@ -2418,18 +2585,48 @@ public class Main extends Application
 			  public void handle(Event event) 
 			  {
 				  System.out.println("Deleting all Rats...");
-
-				  for(Rat rat : StatusInfo.getRats())
+				  
+				  try
 				  {
-					  if(rat.getId() != null)
+					  if(ps.deleteAll())
 					  {
-						  System.out.println("Deleting " + rat.getFilePath() + " -- " + rat.getCategory());
-						  StatusInfo.removeRat(rat.getId());
+						  sfx.playSound("deleteAll");
+						  
+						  for(Rat rat : StatusInfo.getRats())
+						  {
+							  if(rat.getId() != null)
+							  {
+								  System.out.println("Deleting " + rat.getFilePath() + " -- " + rat.getCategory());
+								  
+								  StatusInfo.removeRat(rat.getId());
+							  }
+						  }
 					  }
+					  else
+					  {
+						  sfx.playSound("err");
+						  System.out.println("Error deleting files");
+
+					  }
+					  
+					  StatusInfo.refresh();
+
 				  }
+				  catch (IOException | InterruptedException e)
+				  {
+					  sfx.playSound("err");
+					  e.printStackTrace();
+				  }
+
+				  
+				 
 				  StatusInfo.refresh();
 			  }
 		  }));
+		  
+		  File quar = new File("Quarantine");
+		  System.out.println("quar " +  quar.exists());
+		  
 		  
 		  //Whitelist rat IMPORTANT
 		  confBtnXs.get(1).addAction((new EventHandler<Event>()
@@ -2449,14 +2646,11 @@ public class Main extends Application
 			  @Override  
 		      public void handle(Event event) 
 			  {  
-				  
-				  stage.setScene(statusScene);
-				  Menu.changeScene(rootST, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
-				  refreshStatus.handle(event);
-				  
+				 
 				  if(StatusInfo.getTotalRats() >= 1) //more than 1 rat
 				  {
+					  if(stage.getScene() != scanFScene)
+						  sfx.playSound("alarm");
 					  ratTitle.setText("");
 					  ratPath.setText("");
 					  sevTxt.setText("");
@@ -2465,8 +2659,13 @@ public class Main extends Application
 				  }
 				  else //if (StatusInfo.getTotalRats() == 1)
 				  {
-					  
+					  sfx.playSound("ding");
 				  }
+				  stage.setScene(statusScene);
+				  Menu.changeScene(rootST, addToAll);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  refreshStatus.handle(event);
+				  
 				  event.consume();
 		      }    
 		  };  
@@ -2525,7 +2724,7 @@ public class Main extends Application
 		      public void handle(Event event) 
 			  {  
 				  
-				  stage.setScene(updateScene);
+				  /*stage.setScene(updateScene);
 				  Menu.changeScene(rootUP, addToAll);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
 				  if(!rootUP.getChildren().contains(backUPBox))
@@ -2533,7 +2732,11 @@ public class Main extends Application
 					  rootUP.getChildren().add(backUPBox);
 					  rootUP.getChildren().add(backUPText);
 				  }
-				  backUPBtn.toFront();
+				  backUPBtn.toFront();*/
+				  
+				  unimplementedErr.addToGroup(rootMM);
+				  unimplementedErr.getAnimation().handle(event);
+				  sfx.playSound("err");
 
 				  event.consume();
 		      }    
@@ -2585,9 +2788,13 @@ public class Main extends Application
 		      public void handle(Event event) 
 			  {  
 				  
-				  stage.setScene(historyScene);
+				  /*stage.setScene(historyScene);
 				  Menu.changeScene(rootHS, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);*/
+				  
+				  unimplementedErr.addToGroup(rootMM);
+				  unimplementedErr.getAnimation().handle(event);
+				  sfx.playSound("err");
 				  
 				  event.consume();
 		      }    
@@ -2595,6 +2802,24 @@ public class Main extends Application
 		  sc.addScene(historyScene, toHistoryScreen);
 		  bottomButtons.get(1).addAction(toUpdateScreen);
 		  
+		  EventHandler<Event> toDevicesScene = new EventHandler<Event>() 
+		  {
+			  @Override  
+		      public void handle(Event event) 
+			  {  
+				 
+				  unimplementedErr.addToGroup(rootMM);
+				  unimplementedErr.getAnimation().handle(event);
+				  sfx.playSound("err");
+				  
+				  event.consume();
+		      }    
+		  };  
+		  bottomButtons.get(3).addAction(toDevicesScene);
+		  
+		  /*unimplementedErr.addToGroup(rootMM);
+		  unimplementedErr.getAnimation().handle(event);
+		  sfx.playSound("err");*/
 		  
 		  
 		//~~~~~~~~~~~~~~~~~~~~~~ About ~~~~~~~~~~~~~~~~~~~~~
@@ -2862,7 +3087,7 @@ public class Main extends Application
 		  
 		  String prefTheme = (String)(PrefReader.getPref("Theme"));
 		  
-		  System.out.println("Setting palette to + " + prefTheme + " -- " + themeNames.indexOf(prefTheme));
+		  System.out.println("Setting palette to " + prefTheme + " -- " + themeNames.indexOf(prefTheme));
 		  curPalette.changePalette(themes.get(themeNames.indexOf(prefTheme)),sc.toArray(), buttonFlashes, exclude);
 		  curPalette.setPalette(themes.get(themeNames.indexOf(prefTheme)));		  
 		  
@@ -2909,7 +3134,6 @@ public class Main extends Application
 
 	          	}
 	      });  
-		  
   	}  	
   
   	public static String displayTime(String str)
@@ -2981,7 +3205,155 @@ public class Main extends Application
   		
   		return newStr;
   	}
+  	
+  	public static String displayTime2(String str)
+  	{
+  		String newStr = new String();
+  		int[] nums = new int[4];
+  		
+  		//year, month, day
+  		String[] numStrs = str.substring(0, str.indexOf('T')).split("-");
+  		nums[0] = Integer.parseInt(numStrs[1]);
+  		nums[1] = Integer.parseInt(numStrs[2]);
+  		
+  		//hour, minute
+  		numStrs = str.substring(str.indexOf('T')+1).split(":");
+  		nums[2] = Integer.parseInt(numStrs[0]);
+  		nums[3] = Integer.parseInt(numStrs[1]);
+  		
+  		switch(nums[0])
+  		{
+  			case 1:
+  				newStr = "Jan";
+  				break;
+  			case 2:
+  				newStr = "Feb";
+  				break;
+  			case 3:
+  				newStr = "Mar";
+  				break;
+  			case 4:
+  				newStr = "Apr";
+  				break;
+  			case 5:
+  				newStr = "May";
+  				break;
+  			case 6:
+  				newStr = "Jun";
+  				break;
+  			case 7:
+  				newStr = "Jul";
+  				break;
+  			case 8:
+  				newStr = "Aug";
+  				break;
+  			case 9:
+  				newStr = "Sep";
+  				break;
+  			case 10:
+  				newStr = "Oct";
+  				break;
+  			case 11:
+  				newStr = "Nov";
+  				break;
+  			case 12:
+  				newStr = "Dec";
+  				break;
+  		}
+  		
+  		newStr += " " + nums[1] + " at ";
+  		
+  		//change from military time
+  		String sub = new String(" AM");
+  		if(nums[2] == 0)
+  		{
+  			nums[2] = 12;
+  		}
+  		if(nums[2] > 12)
+  		{
+  			sub = " PM";
+  			nums[2] -= 12;
+  		}
+  		
+  		newStr += nums[2] + ":" + numStrs[1] + sub;
+  		
+  		return newStr;
+  	}
   
+  	private PopUp errorMessage(String body, int[] nums, Palette curPalette, ArrayList<FillTransition> buttonFlashes)
+  	{
+  		int sceneWidth = nums[0];
+  		int sceneHeight = nums[1];
+  		int btnWidth = nums[2];
+  		
+  		//err POPUP
+		  ArrayList<Shape> errComp = new ArrayList<Shape>();
+		  ArrayList<Control> errBtns = new ArrayList<Control>();
+
+		  Rectangle blockScreen = Menu.icon(sceneWidth, sceneHeight, 0, 0, 0, curPalette.getLineColor(), curPalette.getLineColor());
+		  blockScreen.setOpacity(0.5);
+		  errComp.add(blockScreen);
+		  
+		  Rectangle errBg = Menu.icon(sceneWidth/2, sceneHeight/2, sceneWidth/4, sceneHeight/4, 10, curPalette.getBgColor(), curPalette.getLineColor());
+		  errComp.add(errBg);
+		  
+		  Rectangle errTop = Menu.icon(sceneWidth/2, sceneHeight/8, sceneWidth/4, sceneHeight/4, 10, curPalette.getPriColor(), curPalette.getLineColor());
+		  errComp.add(errTop);
+		  
+		  Rectangle errIcon = Menu.icon((int)(errTop.getHeight()*0.5), (int)(errTop.getHeight()*0.5), sceneWidth/4 + (int)(errTop.getHeight()*0.5), sceneHeight/4 + (int)(errTop.getHeight()*0.25),  "file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/" + "statusBadSmall.PNG");
+		  errComp.add(errIcon);
+		  
+		  
+		  Rectangle rect = Menu.icon(btnWidth, btnWidth/2, (int)(errBg.getX() + (errBg.getWidth() - btnWidth)/2), (int)(3*errBg.getHeight()/4 + errBg.getY()), 10, curPalette.getBgColor(), curPalette.getLineColor());
+		  Text txt = new Text("O.K.");
+		  txt.setFont(curPalette.getSubTitleFont());
+		  txt.setFill(curPalette.getLineColor());
+		  
+		  //Set variables
+		  
+		  ButtonX btnX = new ButtonX(rect, curPalette.getSecColor(), txt, buttonFlashes);
+			  
+			  errComp.add(rect);
+			  errComp.add(txt);
+			  errBtns.add(btnX.getButton());
+		  
+		  
+		  Text errTitle = new Text("An Error Has Occured");
+		  errTitle.setFont(curPalette.getTitleFont());
+		  errTitle.setFill(curPalette.getLineColor());
+		  Menu.centerText(errTop, errTitle);
+		  errComp.add(errTitle);
+		  
+		  Text errBody = new Text(body);
+		  errBody.setFont(curPalette.getDefaultFont());
+		  errBody.setFill(curPalette.getLineColor());
+		  Menu.centerText((int)(errBg.getWidth()*0.9), (int)(errBg.getX() + errBg.getWidth()*0.05), (int)(errTop.getY() + errTop.getHeight() + curPalette.getTitleFont().getSize()), errBody);
+		  errComp.add(errBody);
+		  
+		  PopUp pp = new PopUp(btnX, 100, errComp, errBtns);
+		  
+		  btnX.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  //whiteBtn.getActions().get(1).handle(event);
+				  pp.setVisible(false);
+				  
+				  for(Shape shape : pp.getComponents())
+				  {
+					  if(shape.isVisible())
+						  shape.setVisible(false);
+				  }
+				  
+
+				  event.consume();
+			  }
+		  }));
+		  
+		  return pp;
+  	}
+  	
 	public static void main(String[] args) throws IOException
 	{
 		  launch(args);

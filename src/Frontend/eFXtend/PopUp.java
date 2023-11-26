@@ -18,6 +18,8 @@ public class PopUp extends AnimatedMenu
 {
 	double[] maxOpacities;
 	
+	EventHandler<Event> animation;
+	
 	/**
 	 * Makes a new pop up menu
 	 * @param btn button to open pop up
@@ -73,7 +75,7 @@ public class PopUp extends AnimatedMenu
             	if(animationsOn)
             	{
 	            	for(int j = 0; j < animations.size(); j++)
-	            	{
+	            	{	            		
 	            		FadeTransition fade = (FadeTransition)animations.get(j);
 	            		fade.play();
 	            		
@@ -125,9 +127,18 @@ public class PopUp extends AnimatedMenu
 				event.consume();
             }  //end popup open
 	    };  
-	    triggerBtn.addAction(popUpOpen);
+	    
+	    animation = popUpOpen;
+	    
+	    if(triggerBtn != null)
+	    	triggerBtn.addAction(popUpOpen);
                
         //btn.getButton().setOpacity(0);        
+	}
+	
+	public EventHandler<Event> getAnimation()
+	{
+		return animation;
 	}
 }
 	

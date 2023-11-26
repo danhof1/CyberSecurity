@@ -59,12 +59,16 @@ public class clamstart extends Task
               if(line.contains("C:"))
     		  {
             	  //TEMP RAT TESTER
-            	 /*if(line.contains("evilRat.txt"))
+            	 if(line.contains("evilRat.txt"))
             	  {	
             		  System.out.println("SEVERITY TEST:");
             		  line = line.replace("OK", "T3st.Malware.Agent-123 FOUND");
             		  System.out.println(line);
-            	  }*/
+            		  
+            		  
+            		  File f = new File(line.substring( line.indexOf('C'), line.lastIndexOf(':') ));
+            		  f.renameTo(new File("Quarantine/" + f.getName()));
+            	  }
             	  
             	  	count++;
             	  	Severity sev = StatusCheck.check(line);

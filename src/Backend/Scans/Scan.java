@@ -82,8 +82,8 @@ public class Scan //extends Thread
         	
         	//Prints to console                    	
             //Runs clamdscan
-            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
-            
+            //Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --recursive " + filePaths.get(i));
+            Process proc = Runtime.getRuntime().exec("C:\\Program Files\\ClamAV\\clamdscan.exe --move=\"" + System.getProperty("user.dir") + "\\Quarantine\"" + filePaths.get(i));
             if(!ScanManager.liveScan())
             {
             	System.out.println("Dead");
