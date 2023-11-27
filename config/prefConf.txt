@@ -1,5 +1,5 @@
 //Preferences stored here
 Animations:	TRUE
-Theme:	Cherry
+Theme:	Light
 AutoDelete:	FALSE
 Audio:	TRUE

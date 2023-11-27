@@ -5,6 +5,7 @@ import javafx.application.Platform;
 //Not JavaFX
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +37,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -249,15 +251,18 @@ public class Main extends Application
 	  //Sound effects	  
 	  Sfxtend sfx = new Sfxtend();
 	  sfx.setVolume(0.5);
-	  sfx.addSound("ding", "sounds/select.wav");
-	  sfx.addSound("alarm", "sounds/alarm.wav");
-	  sfx.addSound("delete", "sounds/delete.wav");
-	  sfx.addSound("deleteAll", "sounds/deleteAll.wav");
-	  sfx.addSound("err", "sounds/err.wav");
-	  sfx.addSound("exit", "sounds/exit.wav");
-	  sfx.addSound("meow", "sounds/meow.wav");
-	  sfx.addSound("slide", "sounds/slide.wav");
-	  sfx.addSound("slide2", "sounds/slide2.wav");
+	  sfx.addSound("ding", System.getProperty("user.dir") + "/sounds/select.wav");
+	  sfx.addSound("alarm", System.getProperty("user.dir") + "/sounds/alarm.wav");
+	  sfx.addSound("delete", System.getProperty("user.dir") + "/sounds/delete.wav");
+	  sfx.addSound("deleteAll", System.getProperty("user.dir") + "/sounds/deleteAll.wav");
+	  sfx.addSound("err", System.getProperty("user.dir") + "/sounds/err.wav");
+	  sfx.addSound("exit", System.getProperty("user.dir") + "/sounds/exit.wav");
+	  sfx.addSound("meow", System.getProperty("user.dir") + "/sounds/meow.wav");
+	  sfx.addSound("meow-2", System.getProperty("user.dir") + "/sounds/meow-2.wav");
+	  sfx.addSound("meow-1", System.getProperty("user.dir") + "/sounds/meow-1.wav");
+	  sfx.addSound("meow+1", System.getProperty("user.dir") + "/sounds/meow+1.wav");
+	  sfx.addSound("slide", System.getProperty("user.dir") + "/sounds/slide.wav");
+	  sfx.addSound("slide2", System.getProperty("user.dir") + "/sounds/slide2.wav");
 
 	  
 	  
@@ -275,7 +280,8 @@ public class Main extends Application
 	  Rectangle topBar = Menu.icon(sceneWidth, sceneHeight/7, 0, 0, 0, curPalette.getPriColor(), curPalette.getLineColor());
 	  //Menu.addShadow(topBar, 30, 0);
 	  //System.out.println(topBar.getHeight());
-	
+	  rootMM.getChildren().add(topBar);
+
 	  
 	  // Menu > Layout > Side Line
 	  Line sideLine = new Line(sceneWidth-1, 0, sceneWidth-1, sceneHeight);
@@ -307,7 +313,7 @@ public class Main extends Application
 	  Line line = new Line(0, topBarrier-1, barrier1-1, topBarrier-1);
 	  line.setStroke(curPalette.getLineColor());
 	  line.setStrokeWidth(2);
-	  rootMM.getChildren().add(line);
+	  //rootMM.getChildren().add(line);
 	  
 	  //Main Menu > Layout > Bottom
 	  ArrayList<ButtonX> bottomButtons = new ArrayList<ButtonX>();
@@ -317,6 +323,17 @@ public class Main extends Application
 	  int[] errNums = {sceneWidth, sceneHeight, (int)(1.5*icon2Width/4)};
 	  PopUp unimplementedErr = errorMessage("This method hasn't been implemented yet, try again later.", errNums, curPalette, buttonFlashes);
 	  animMenus.add(unimplementedErr);
+	  
+	  unimplementedErr.getButtonX().addAction(new EventHandler<Event>()
+	  {
+		  public void handle(Event event) 
+		  {			  
+			  
+			  sfx.playSound("meow-1");
+			  event.consume();
+
+		  }  
+	  });
 	  
 	  for(int i = 0; i < 4; i++) 
 	  {
@@ -354,7 +371,7 @@ public class Main extends Application
 			  break;
 		  case 3:
 			  path = curPath + "devicesIcon.PNG";
-			  txt = "My Devices";
+			  txt = "About R.A.T. Trap";
 			  break;
 		  }
 		  
@@ -383,6 +400,7 @@ public class Main extends Application
 			  {
 		    public void handle(Event event)
 		    {
+		    	sfx.playSound("meow");
 		    	getHostServices().showDocument("https://rattrapav.neocities.org/FAQ");
 		    }
 	  });		
@@ -396,7 +414,10 @@ public class Main extends Application
 	  ratTrap.setTextAlignment(TextAlignment.CENTER);
 	  ratTrap.setFill(curPalette.getLineColor());
 	  
-	  Text about = new Text ("about");
+	  Rectangle mainTitle = Menu.icon((int)((topBarrier*0.8) * (546/63.0)), (int)(topBarrier*0.8), (int)(sceneWidth - ((topBarrier*0.8) * (546/63.0)))/2, (int)(topBarrier*0.1), curPath + "ratTrapLogo.PNG");
+	  
+	  
+	  /*Text about = new Text ("about");
 	  about.setY((topBarrier * (3.0 / 4)) );
 	  about.setX(-icon2Height/4);
 	  about.setFont(curPalette.getSubTitleFont());
@@ -407,22 +428,30 @@ public class Main extends Application
 	  
 	  Rectangle aboutIcon = Menu.icon(icon2Height/4, icon2Height/4, sceneWidth/2 + icon2Height/8, (int)(about.getY() - (icon2Height * (1.5/8))), curPath + "infoIcon.PNG");
 	  ImageInput aboutInput = (ImageInput)(aboutIcon.getEffect());
-
+		*/
 	  //About button stuff
-	  Button aboutBtn = new Button();
-	  aboutBtn.setPrefWidth((int)(3*titleSize) + aboutInput.getSource().getWidth());
-	  aboutBtn.setPrefHeight((int)titleSize*0.75);
-	  aboutBtn.setLayoutX(aboutInput.getX() - aboutBtn.getPrefWidth() + aboutInput.getSource().getWidth());
-	  aboutBtn.setLayoutY(((ImageInput)aboutIcon.getEffect()).getY());
-	  aboutBtn.setOpacity(0);
-	  	  
-	  FillTransition aboutFill = new FillTransition();  
+	  
+	  
+	  ButtonX aboutBtn = bottomButtons.get(3);
+	  aboutBtn.addAction(new EventHandler<Event>() //kill scan
+	  {
+	    public void handle(Event event)
+	    {
+	    	sfx.playSound("meow");
+	    	getHostServices().showDocument("https://rattrapav.neocities.org");
+	    }
+	  });
+	  aboutBtn.addToGroup(rootMM);
+	    
+	    
+	  
+	  /*FillTransition aboutFill = new FillTransition();  
 	  aboutFill.setAutoReverse(true);  	      
 	  aboutFill.setCycleCount(1);  
 	  aboutFill.setDuration(Duration.millis(100));  
 	  aboutFill.setToValue(curPalette.getLineColor());  
 	  aboutFill.setShape(about);  
-	  buttonFlashes.add(aboutFill);	    
+	  buttonFlashes.add(aboutFill);*/	    
 	  	  
 	  //Main Menu > Graphics > Login Box
 	  Rectangle loginBox = Menu.icon(iconSize, iconSize, sceneWidth - buffer2 - iconSize, buffer, 10, curPalette.getPriColor(), curPalette.getLineColor());
@@ -431,7 +460,7 @@ public class Main extends Application
 	  
 	  
 	  //Main Menu > Graphics > Icon Box
-	  Rectangle iconBox = Menu.icon(iconSize, iconSize, buffer2, buffer, 10, curPalette.getPriColor(), curPalette.getLineColor());
+	  Rectangle iconBox = Menu.icon(iconSize, iconSize, buffer2 + (icon2Height - iconSize)/2, buffer, 10, curPalette.getPriColor(), curPalette.getLineColor());
 	  Rectangle headerIcon = Menu.icon((int)(iconSize * 0.8), (int)(iconSize * 0.8), iconBox, curPath + "settingsIcon.PNG");
 	  
 	  //							w			h			x				y
@@ -514,6 +543,19 @@ public class Main extends Application
 	  calTog.addToGroup(rootCL);
 	  calTog.addToArrays(addCalEvent.getComponents(), addCalEvent.getButtons());
 	  
+	  calTog.addAction((new EventHandler<Event>()
+	  {
+		  @Override  
+		  public void handle(Event event) 
+		  {
+			  if(calTog.getValue())
+				  sfx.playSound("slide");
+			  else
+				  sfx.playSound("slide2");			  
+			  event.consume();
+		  }
+	  }));
+	  
 	  Text eventTxt = new Text("Event:");
 	  eventTxt.setFill(curPalette.getAcc3Color());
 	  eventTxt.setFont(curPalette.getTitle2Font());
@@ -531,6 +573,34 @@ public class Main extends Application
 	  ButtonSwitch calScanBS = new ButtonSwitch(sceneWidth - (int)calDiv2.getStartX(), titleSize, (int)calDiv2.getStartX(), (int)(calTog.getBg().getY() + calTog.getBg().getHeight() + buffer2 + titleSize), false, shAction, curPalette.getLineColor(), curPalette.getRed(), curPalette.getTitleFont());
 	  calScanBS.addToGroup(rootCL);
 	  calScanBS.addToArrays(addCalEvent.getComponents(), addCalEvent.getButtons());
+	  for(int i = 0; i < calScanBS.size(); i++)
+	  {
+		  ButtonX btn = calScanBS.getButtonXs().get(i);
+		  final int index = i;
+
+		  btn.addAction((new EventHandler<Event>()
+		  {
+			  public void handle(Event event) 
+			  {			  
+				  switch(index)
+				  {
+				  	default:
+				  		sfx.playSound("meow-1");
+				  		break;
+				  	case 1:
+				  		sfx.playSound("meow");
+				  		break;
+				  	case 2:
+				  		sfx.playSound("meow+1");
+				  		break;
+				  }
+				  
+				  event.consume();
+			  }
+		  }));
+		  
+	  }
+	  
 	  
 	  Text scanTypeTxt = new Text("Options:");
 	  scanTypeTxt.setFill(curPalette.getAcc3Color());
@@ -562,14 +632,13 @@ public class Main extends Application
 		  	File file1 = null;
 		    public void handle(Event event)
 		    {
-		    	
+		    	sfx.playSound("meow");
 		    	if(calTog.getValue()) //backup
 		    	{
 		    		calPickerBox.setStroke(curPalette.getLineColor());
 		    		
 		    		FileChooser file = new FileChooser();  
 		    		file.setTitle("Choose a File to Backup");
-
 		    		file1 = file.showOpenDialog(stage);		    		
 		    	}
 		    	else //scan
@@ -584,10 +653,12 @@ public class Main extends Application
 		    	//Update text
 	    		if(file1 != null)
 	    		{
+	    			sfx.playSound("meow");
 	    			curPathTxt.setText(file1.getAbsolutePath());
 	    		}
 	    		else //null
 	    		{
+	    			sfx.playSound("meow-1");
 	    			curPathTxt.setText("No files chosen");
 	    		}
 
@@ -646,6 +717,37 @@ public class Main extends Application
 	  recurBS.addToGroup(rootCL);
 	  recurBS.addToArrays(addCalEvent.getComponents(), addCalEvent.getButtons());
 
+	  for(int i = 0; i < recurBS.size(); i++)
+	  {
+		  ButtonX btn = recurBS.getButtonXs().get(i);
+		  final int index = i;
+
+		  btn.addAction((new EventHandler<Event>()
+		  {
+			  public void handle(Event event) 
+			  {			  
+				  switch(index)
+				  {
+				  	default:
+				  		sfx.playSound("meow-2");
+				  		break;
+				  	case 1:
+				  		sfx.playSound("meow-1");
+				  		break;
+				  	case 2:
+				  		sfx.playSound("meow");
+				  		break;
+				  	case 3:
+				  		sfx.playSound("meow+1");
+				  		break;
+				  }
+				  
+				  event.consume();
+			  }
+		  }));
+		  
+	  }
+	  
 	 
 	  ArrayList<String> days = new ArrayList<String>();
 	  days.add("M");
@@ -656,11 +758,44 @@ public class Main extends Application
 	  days.add("S");
 	  days.add("U");
 	  
+	  
+	  
 	  //												w						h						x						y
 	  ButtonSwitch dayBS = new ButtonSwitch(sceneWidth - (int)calDiv2.getStartX(), titleSize, (int)calDiv2.getStartX(), (int)(recurBS.getY() + titleSize + buffer2), false, days, curPalette.getLineColor(), curPalette.getRed(), curPalette.getTitleFont());
 	  dayBS.addToGroup(rootCL);
 	  dayBS.addToArrays(addCalEvent.getComponents(), addCalEvent.getButtons());
 
+	  for(int i = 0; i < dayBS.size(); i++)
+	  {
+		  ButtonX btn = dayBS.getButtonXs().get(i);
+		  final int index = i % 4;
+
+		  btn.addAction((new EventHandler<Event>()
+		  {
+			  public void handle(Event event) 
+			  {			  
+				  switch(index)
+				  {
+				  	default:
+				  		sfx.playSound("meow-2");
+				  		break;
+				  	case 1:
+				  		sfx.playSound("meow-1");
+				  		break;
+				  	case 2:
+				  		sfx.playSound("meow");
+				  		break;
+				  	case 3:
+				  		sfx.playSound("meow+1");
+				  		break;
+				  }
+				  
+				  event.consume();
+			  }
+		  }));
+		  
+	  }
+	  
 	  Text recurTxt = new Text("Every...");
 	  recurTxt.setFill(curPalette.getAcc3Color());
 	  recurTxt.setFont(curPalette.getTitle2Font());
@@ -708,6 +843,62 @@ public class Main extends Application
 	  ts1.setMinInc(5);
 	  ts1.addToGroup(rootCL);
 	  ts1.addToArrays(addCalEvent.getComponents(), addCalEvent.getButtons());
+	  for(int i = 0; i < ts1.getButtons().size(); i++)
+	  {
+		  Button btn = (Button)ts1.getButtons().get(i);
+		  
+		  switch(i)
+		  {
+			//hour
+		  	case 0:
+		  		btn.setOnMouseClicked((event) -> 
+		  		{
+		  			int index = ts1.getHour() % 4;
+		  			 switch(index)
+					  {
+					  	default:
+					  		sfx.playSound("meow-2");
+					  		break;
+					  	case 1:
+					  		sfx.playSound("meow-1");
+					  		break;
+					  	case 2:
+					  		sfx.playSound("meow");
+					  		break;
+					  	case 3:
+					  		sfx.playSound("meow+1");
+					  		break;
+					  }		  			
+		  		});
+		  		break;
+		  	//minute
+		  	case 1:
+		  		btn.setOnMouseClicked((event) -> 
+		  		{
+		  			int index = (ts1.getMin() / 5) % 4;
+		  			 switch(index)
+					  {
+					  	default:
+					  		sfx.playSound("meow-2");
+					  		break;
+					  	case 1:
+					  		sfx.playSound("meow-1");
+					  		break;
+					  	case 2:
+					  		sfx.playSound("meow");
+					  		break;
+					  	case 3:
+					  		sfx.playSound("meow+1");
+					  		break;
+					  }		  			
+		  		});
+		  		break;
+		  	//am/pm
+		  	default:
+		  		btn.setOnMouseClicked((event) -> sfx.playSound("meow"));
+		  		break;
+		  }
+	  }
 	  
 	  Text timeTxt = new Text("At...");
 	  timeTxt.setFill(curPalette.getAcc3Color());
@@ -768,6 +959,7 @@ public class Main extends Application
 	  {
 		    public void handle(Event event)
 		    {
+		    	sfx.playSound("meow");
 		    	blockCalAdd.setVisible(false);
 		    	addEventBtn.setVisible(false);
 		    	calErrTxt.setText("");
@@ -784,6 +976,8 @@ public class Main extends Application
 	  {
 		    public void handle(Event event)
 		    {
+		    	sfx.playSound("delete");
+		    	
 		    	blockCalAdd.setVisible(true);
 		    	addEventBtn.setVisible(true);
 		    	
@@ -970,6 +1164,7 @@ public class Main extends Application
 				  {
 					    public void handle(Event event)
 					    {
+					    	sfx.playSound("delete");
 					    	SM.rmSchedule(Integer.parseInt(strArr[0]));
 					    	entry.setStrikethrough(true);
 					    	entry.setOpacity(0.5);
@@ -1101,14 +1296,17 @@ public class Main extends Application
 			  {
 				  //Add event
 				  SM.addToScheulde(strArr);
-				
+				  sfx.playSound("meow");
 				  calRefresh.handle(event);
 			  }
+			  else
+				  sfx.playSound("err");
 		  }
 	  };
 	  calSubmitBtn.addAction(calSubmitEvent);
 	  
 	 
+	  
 	  
 	  EventHandler<Event> folderSkip = new EventHandler<Event>() 
 	  {	  
@@ -1121,7 +1319,6 @@ public class Main extends Application
 		      File dir1 = dir.showDialog(stage);
 		      System.out.println(dir1.toString()); //TEMP*/
 			  
-			  unimplementedErr.addToGroup(rootMM);
 			  unimplementedErr.getAnimation().handle(event);
 			  sfx.playSound("err");
 			  
@@ -1137,6 +1334,7 @@ public class Main extends Application
 			  {
 		    public void handle(Event event)
 		    {
+		    	sfx.playSound("meow");
 		    	getHostServices().showDocument("https://rattrapav.neocities.org/RatNews");
 		    }
 	  });
@@ -1160,8 +1358,8 @@ public class Main extends Application
 			  txt = "Scan";
 			  break;
 		  case 1:
-			  path = curPath + "quarentineIcon.PNG";
-			  txt = "Quarentine";
+			  path = curPath + "QuarentineIcon.PNG";
+			  txt = "Quarantine";
 			  break;
 		  case 2:
 			  path = curPath + "backupIcon.PNG";
@@ -1257,11 +1455,53 @@ public class Main extends Application
 		 curBtn.setVisible(false);
 	  }
 	  	  
+	  for(int i = 0; i < scanBS.size(); i++)
+	  {
+		  ButtonX btn = scanBS.getButtonXs().get(i);
+		  final int index = i;
+
+		  btn.addAction((new EventHandler<Event>()
+		  {
+			  public void handle(Event event) 
+			  {			  
+				  switch(index)
+				  {
+				  	default:
+				  		sfx.playSound("meow+1");
+				  		break;
+				  	case 1:
+				  		sfx.playSound("meow");
+				  		break;
+				  	case 2:
+				  		sfx.playSound("meow-1");
+				  		break;
+				  }
+				  
+				  event.consume();
+			  }
+		  }));
+		  
+	  }
+	  
 	  DropDown scanDD = new DropDown(scanDropdown, icon2Height, 500, scanDrawerList, scanBSBtns);
 	  animMenus.add(scanDD);
 	  Button scanDropdownBtn = scanDD.getButton();
 	  scanDD.addToGroup(rootMM);	  	  
 	  rootMM.getChildren().add(scanDropdownBtn);
+	  
+	  scanDD.getButtonX().addAction((new EventHandler<Event>()
+	  {
+		  @Override  
+		  public void handle(Event event) 
+		  {			  
+			  if(scanDD.isOpen())
+				  sfx.playSound("slide");
+			  else
+				  sfx.playSound("slide2");
+			  
+			  event.consume();
+		  }
+	  }));
 	  
 	  actionsBar.get(0).toFront();
 	  actionsText.get(0).toFront();
@@ -1325,7 +1565,7 @@ public class Main extends Application
 		  	case 1:	str = "Next Scan: ";
 		  			break;
 		  			
-		  	case 2: str = "Files Quarentined: ";
+		  	case 2: str = "Files Quarantined: ";
 		  			break;
 		  }
 		  text.setText(str);
@@ -1348,9 +1588,10 @@ public class Main extends Application
 	  
 		  ArrayList<javafx.scene.Node> addToAll = new ArrayList<javafx.scene.Node>();
 		  addToAll.add(topBar);
-		  addToAll.add(ratTrap);
-		  addToAll.add(about);
-		  addToAll.add(aboutIcon);
+		  //addToAll.add(ratTrap);
+		  addToAll.add(mainTitle);
+		  //addToAll.add(about);
+		  //addToAll.add(aboutIcon);
 		  //addToAll.add(loginBox);
 		  addToAll.add(iconBox);
 		  //addToAll.add(sideLine);
@@ -1358,7 +1599,7 @@ public class Main extends Application
 		  //addToAll.add(loginIcon);
 		  //loginBtn.addToArray(addToAll);
 		  addToAll.add(headerIcon);
-		  addToAll.add(aboutBtn);
+		  //addToAll.add(aboutBtn);
 		  //addToAll.add(notifBtn);
 		  homeBtn.addToArray(addToAll);
 		  
@@ -1378,7 +1619,7 @@ public class Main extends Application
 
 			  if(str.contains("Quarantined"))
 			  {
-				  int num = new File("Quarantine").list().length;
+				  int num = new File(System.getProperty("user.dir") + "\\Quarantine").list().length;
 				  logs.get(i).setText(num + "");
 				  
 				  str = str.substring(0, str.indexOf('\t')+1) + num;
@@ -1415,17 +1656,23 @@ public class Main extends Application
 			  } 
 		  }
 		  
+		  iconBox.setVisible(false);
 		  EventHandler<Event> toMenuScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
 			  {  				  
+				  
 				  stage.setScene(menuScene);
 				  Menu.changeScene(rootMM, addToAll);
 				  curPalette.changeImg(headerIcon, curPath + "settingsIcon.PNG", true);
+				  iconBox.setVisible(false);
+
 				  scanDropdown.toFront();
 				  scanDropdownBtn.toFront();					  
 				  
+				  if(scanDD.isOpen())
+					  scanDD.getButtonX().getActions().get(0).handle(event);
 				  
 				  //Refresh Logs Display
 				  logInfo.writeFile();
@@ -1436,7 +1683,7 @@ public class Main extends Application
 					  
 					  if(str.contains("Quarantined"))
 					  {
-						  int num = new File("Quarantine").list().length;
+						  int num = new File(System.getProperty("user.dir") + "\\Quarantine").list().length;
 						  logs.get(i).setText(num + "");	
 						  
 						  str = str.substring(0, str.indexOf('\t')+1) + num;
@@ -1471,7 +1718,7 @@ public class Main extends Application
 						  logs.get(i).setText(str);
 					  } 
 				  }
-				  
+				  topBar.toBack();
 				  
 				  event.consume();
 		      }    
@@ -1479,19 +1726,49 @@ public class Main extends Application
 		  SceneControl sc = new SceneControl();
 		  sc.addScene(menuScene, toMenuScreen);
 		  sc.addScene(loadingScene, null);
-		  backCalBtn.addAction(toMenuScreen);
+		  //backCalBtn.addAction(toMenuScreen);
+		  backCalBtn.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  toMenuScreen.handle(event);
+				  sfx.playSound("meow");
+				  
+				  event.consume();
+			  }
+		  }));
+		  
 		  backCalBtn.addToGroup(rootCL);
 		  
-		  EventHandler<Event> fileQuarentine = new EventHandler<Event>() 
+		  PopUp userQuar = infoMessage("File Quarantined", "The selected file has been quarantined. Rat Trap will treat it as a Rat until either deleted or marked as safe.", errNums, curPalette, buttonFlashes);
+		  userQuar.addToGroup(rootMM);
+		  animMenus.add(userQuar);
+		  
+		  
+		  EventHandler<Event> fileQuarantine = new EventHandler<Event>() 
 		  {	  
 			  @Override  
 		      public void handle(Event event) 
 			  {  			
+				  sfx.playSound("meow");
+
 				  FileChooser file = new FileChooser();  
-		          file.setTitle("Choose Files to Quarentine");
+		          file.setTitle("Choose Files to Quarantine");
 
 		          List<File> files = file.showOpenMultipleDialog(stage);
 		          System.out.println(files); //TEMP
+		          
+		          if(files == null)
+		          {
+		        	  sfx.playSound("meow-1");
+		        	  return;
+		          }
+		          else
+		          {
+		        	  sfx.playSound("meow");
+		        	  userQuar.getAnimation().handle(event);
+		          }
 		          
 		          for(File rat : files)
 		          {
@@ -1504,25 +1781,30 @@ public class Main extends Application
 	        		  }
 	        		  else
 	        		  {
-	        			  StatusInfo.addRat(rat.getAbsolutePath() + "\tQuarantined by user\tMEDIUM");
+	        			  System.out.println("adding rat");
+	        			  StatusInfo.addRat(rat.getAbsolutePath() + "\tQuarantined.File.\tMEDIUM");
 	        		  }
 		          }
-		          int num = new File("Quarantine").list().length;
+		          int num = new File(System.getProperty("user.dir") + "\\Quarantine").list().length;
 				  logs.get(2).setText(num + "");
 		          event.consume();
 			  }
 		  };
-		  actionButtons.get(1).addAction(fileQuarentine);
+		  actionButtons.get(1).addAction(fileQuarantine);
 		  
 		  EventHandler<Event> toCalScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
-			  {  				  
+			  {  				
+				  sfx.playSound("meow");
+				  
 				  stage.setScene(calScene);
 				  Menu.changeScene(rootCL, addToAll);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
 
+				  
 				  blockCalAdd.setVisible(true);
 				  addEventBtn.setVisible(true);
 				  
@@ -1540,12 +1822,61 @@ public class Main extends Application
 		  stage.setScene(loadingScene); 
 		  stage.show();
 
+		  Rectangle loadScot = Menu.icon((int)(sceneHeight*0.9), (int)(sceneHeight*0.9), -(int)(sceneHeight*0.1), (int)(sceneHeight*0.05), curPath + "Rat-Scott.PNG");
+		  rootLG.getChildren().add(loadScot);
+		  
 		  Text loadTxt = new Text("Loading...");
 		  loadTxt.setFont(curPalette.getTitleFont());
-		  Menu.centerText(sceneWidth, sceneHeight, 0, 0, loadTxt);
-		  loadTxt.setFill(curPalette.getPriColor());
+		  Menu.centerText((int)(0.9*sceneWidth/2), sceneHeight, (int)(0.9*sceneWidth/2), 0, loadTxt);
+		  loadTxt.setY(sceneHeight/2);
+		  loadTxt.setFill(curPalette.getAcc3Color());
 		  loadTxt.textProperty().bind(cs.valueProperty());
 		  rootLG.getChildren().add(loadTxt);
+		  
+		  
+		  Text loadTxt2 = new Text();
+		  loadTxt2.setFont(curPalette.getSubTextFont());
+		  Menu.centerText((int)(0.9*sceneWidth/2), (int)(0.9*sceneWidth/2), (int)loadTxt.getY() + titleSize, loadTxt2);
+		  loadTxt2.setFill(curPalette.getPriColor());
+		  loadTxt2.textProperty().bind(myFresh.messageProperty());
+		  rootLG.getChildren().add(loadTxt2);
+		  
+		  ProgressBar loadProg = Menu.makeProgressBar((int)(0.9*sceneWidth/2), (int)(titleSize*1.5), (int)(0.9*sceneWidth/2), (int)(loadTxt.getY() - titleSize*3), curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
+		  rootLG.getChildren().add(loadProg);
+		  
+		  PrefReader.parse();
+		  boolean animate = (boolean)PrefReader.getPref("Animations");
+		  String spinPath = new String(curPath + "3dScotSpin.gif");
+		  if(!animate)
+		  {
+			  spinPath = new String(curPath + "3dScot.PNG");
+			  loadProg.setVisible(false);
+		  }
+		  
+		  int temp = (int)(loadProg.getLayoutX() + (loadProg.getPrefWidth() - ((414.0/288) * sceneWidth/5))/2);
+		  Rectangle loadSpin = Menu.icon((int)((414.0/288) * sceneWidth/5), sceneWidth/5, temp, titleSize/2, spinPath);
+		  rootLG.getChildren().add(loadSpin);
+
+		  PopUp loadFail = errorMessage("R.A.T. Trap needs administrator accesss in order to function. Please close the program.", errNums, curPalette, buttonFlashes);
+		  animMenus.add(loadFail);
+		  
+		  loadFail.getButtonX().addAction(new EventHandler<Event>() //kill scan
+		  {
+			    public void handle(Event event)
+			    {
+			    	sfx.playSound("exit");
+			    	
+			    	try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	Platform.exit();
+			    	System.exit(0);		
+			    }
+		  });
 		  
 		  loadTxt.textProperty().addListener(new ChangeListener()
 	      {
@@ -1559,6 +1890,14 @@ public class Main extends Application
 	        	 		sfx.playSound("ding");
 	        	 		loadTxt.textProperty().unbind();
 		 			}
+	        	 	else if(newVal.equals("ERROR"))
+	        	 	{
+	        	 		loadTxt.textProperty().unbind();
+	        	 		loadFail.addToGroup(rootLG);
+	        	 		loadFail.open();
+	        	 		
+	        	 		
+	        	 	}
 	          }
 	      });
 		  
@@ -1570,6 +1909,7 @@ public class Main extends Application
 				    {
 				    	if(stage.getScene() != menuScene)
 				    	{
+				    		sfx.playSound("meow");
 					    	toMenuScreen.handle(event);
 					    	if(ScanManager.liveScan())
 								ScanManager.killScan();
@@ -1681,7 +2021,8 @@ public class Main extends Application
 				  rootLI.getChildren().remove(loginIcon);
 				  rootLI.getChildren().remove(loginBox);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
-				  
+				  iconBox.setVisible(true);
+
 				  
 				  Menu.changeScene(rootLI, addToLogin);
 				  signUpBtn.getButton().toFront();
@@ -1734,6 +2075,8 @@ public class Main extends Application
 				  rootCA.getChildren().remove(loginIcon);
 				  rootCA.getChildren().remove(loginBox);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
+
 				  Menu.changeScene(rootCA, addToLogin);
 				  backLIBtn.getButton().toFront();
 				  
@@ -1762,14 +2105,17 @@ public class Main extends Application
 		  rootSC.getChildren().add(cancelText);
 		  cancelText.setTextAlignment(TextAlignment.CENTER);
 
+		  
 		  ButtonX cancelBtn = new ButtonX(cancelBox, curPalette.getAcc4Color(), buttonFlashes);
 		  cancelBtn.addAction(toMenuScreen);
 		  cancelBtn.addAction(new EventHandler<Event>() //kill scan
 			  {
 			    public void handle(Event event)
 			    {
+			    	sfx.playSound("meow-1");
 					ScanManager.killScan();
-
+					homeBtn.getButton().setVisible(true);
+					
 			    	event.consume();
 			    }
 			  });
@@ -1847,7 +2193,7 @@ public class Main extends Application
 		  rootST.getChildren().add(statusIcon);
 		  
 		  //Will be ratscot gif
-		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "hamster-wheel.gif");
+		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "3dScotSpin.gif");
 		  rootSC.getChildren().add(ratGif);
 		  
 		  //SCAN FINISHED SCREEN
@@ -1892,7 +2238,17 @@ public class Main extends Application
 		  finishTxt.setFill(curPalette.getLineColor());
 		  
 		  ButtonX finishBtn = new ButtonX(finishBox, curPalette.getAcc4Color(), finishTxt, buttonFlashes);
-		  finishBtn.addAction(toMenuScreen);
+		  //finishBtn.addAction(toMenuScreen);
+		  finishBtn.addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  sfx.playSound("meow");
+				  toMenuScreen.handle(event);
+			  }
+		  });
+		  
 		  finishBtn.addToGroup(rootSF);
 		  
 		  //Next button
@@ -1999,7 +2355,7 @@ public class Main extends Application
 			    	//Reset values
 			    	
 			    	scanTitle.setText(scanBS.getValue());
-			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
+			    	Palette.changeImg(ratGif, curPath + "3dScotSpin.gif");
 			    	Scan2 scan = null;
 			    	
 			    	if(scanBS.getValue().contains("Quick"))
@@ -2023,7 +2379,7 @@ public class Main extends Application
 			    	
 			    	curDir.textProperty().bind(scan.messageProperty());
 		  	      	prog.progressProperty().bind(scan.progressProperty());
-		  	      	homeBtn.getButton().setVisible(false);
+		  	      	//homeBtn.getButton().setVisible(false);
 		  	      	
 		    		executorService.execute(scan);
 			        event.consume();
@@ -2037,6 +2393,7 @@ public class Main extends Application
 				  if(scanDD.isOpen())
 					  scanDD.getButtonX().getActions().get(0).handle(event);
 				  
+				  sfx.playSound("meow");
 				  
 				  if(scanBS.getValue().contains("Custom"))
 				  {
@@ -2052,6 +2409,8 @@ public class Main extends Application
 						  Menu.changeScene(rootSC, addToAll); //adds objects
 						  //curDir.setText(scanBS.getValue());
 						  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+						  iconBox.setVisible(true);
+
 						  stage.setScene(scanScene); //changes to scan screen
 						  
 						  //Deploys scan
@@ -2068,6 +2427,8 @@ public class Main extends Application
 							  e.printStackTrace();
 						  }
 					  }
+					  else
+						  sfx.playSound("meow-1");
 
 				  }
 				  
@@ -2076,6 +2437,8 @@ public class Main extends Application
 					  Menu.changeScene(rootSC, addToAll); //adds objects
 					  //curDir.setText(scanBS.getValue());
 					  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+					  iconBox.setVisible(true);
+
 					  stage.setScene(scanScene); //changes to scan screen
 					  if(stage.getScene() == scanScene);
 					  {
@@ -2127,6 +2490,8 @@ public class Main extends Application
 	        	  		//change scene
 	        	  		 Menu.changeScene(rootSC, addToAll); //adds objects
 	        	  		 curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+	        	  		 iconBox.setVisible(true);
+
 	        	  		 stage.setScene(scanScene); //changes to scan screen
 	        	  		 
 	        	  		 //start scan
@@ -2136,7 +2501,7 @@ public class Main extends Application
 	        	  			 
 	        	  			//Reset values
 	     			    	
-	     			    	Palette.changeImg(ratGif, curPath + "hamster-wheel.gif");
+	     			    	Palette.changeImg(ratGif, curPath + "3dScotSpin.gif");
 	     			    	Scan2 scan = null;
 	     			    	
 	     			    	//chose scan
@@ -2163,7 +2528,7 @@ public class Main extends Application
 	     			    	
 	     			    	curDir.textProperty().bind(scan.messageProperty());
 	     		  	      	prog.progressProperty().bind(scan.progressProperty());
-	     		  	      	homeBtn.getButton().setVisible(false);
+	     		  	      	//homeBtn.getButton().setVisible(false);
 	     		  	      	
 	     		    		executorService.execute(scan);
 	        	  		 //}    
@@ -2207,7 +2572,19 @@ public class Main extends Application
 		  backSTText.setFill(curPalette.getLineColor());
 
 		  ButtonX backSTBtn = new ButtonX(backSTBox, curPalette.getAcc4Color(), buttonFlashes);
-		  backSTBtn.addAction(toMenuScreen);  
+		  //backSTBtn.addAction(toMenuScreen);  
+		  backSTBtn.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  toMenuScreen.handle(event);
+				  sfx.playSound("meow");
+				  
+				  event.consume();
+			  }
+		  }));
+		  
 		  backSTBtn.addToGroup(rootST);
 		  
 		  Text statTitle = new Text();
@@ -2372,7 +2749,7 @@ public class Main extends Application
 			  {  
 				  System.out.println("Refreshing Status Display...");
 				  StatusInfo.refresh();
-				  
+				  elipses.setVisible(false);
 				  scanActions.setVisible(StatusInfo.getTotalRats() != 0);
 				  
 				  
@@ -2433,7 +2810,7 @@ public class Main extends Application
 					  {
 						  @Override  
 						  public void handle(Event event) 
-						  {							  
+						  {									  
 							  Rat rat = rats.get(index);
 							  curRat.setRat(rat.getId());
 							  
@@ -2473,6 +2850,25 @@ public class Main extends Application
 								  desc = "We think we trapped a Rat in the above file";
 							  
 							  ratDesc.setText(desc);
+							  
+							  //sfx
+							  int num = index % 4;
+							  switch(num)
+							  {
+							  	default:
+							  		sfx.playSound("meow-2");
+							  		break;
+							  	case 1:
+							  		sfx.playSound("meow-1");
+							  		break;
+							  	case 2:
+							  		sfx.playSound("meow");
+							  		break;
+							  	case 3:
+							  		sfx.playSound("meow+1");
+							  		break;
+							  }
+							  
 							  event.consume();
 						  }
 					  }
@@ -2517,7 +2913,7 @@ public class Main extends Application
 		  PostScan ps = new PostScan();
 		  
 		  //Remove rat from statusinfo IMPORTANT
-		  EventHandler<Event> removeRat = new EventHandler<Event>() 
+		  /*EventHandler<Event> removeRat = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
@@ -2533,7 +2929,7 @@ public class Main extends Application
 				  }
 				  event.consume();
 			  }
-		  };
+		  };*/
 		  
 		  
 		  
@@ -2623,23 +3019,59 @@ public class Main extends Application
 				  StatusInfo.refresh();
 			  }
 		  }));
+		  		  
+		  whiteBtn.addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {		
+				  sfx.playSound("meow-1");
+			  }
+		  });
 		  
-		  File quar = new File("Quarantine");
-		  System.out.println("quar " +  quar.exists());
-		  
+		  confBtnXs.get(0).addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  sfx.playSound("meow");
+			  }
+		  });
 		  
 		  //Whitelist rat IMPORTANT
-		  confBtnXs.get(1).addAction((new EventHandler<Event>()
+		  confBtnXs.get(1).addAction(new EventHandler<Event>()
 		  {
 			  @Override  
 			  public void handle(Event event) 
 			  {
 				  System.out.println("Whitelisting " + curRat.getFilePath() + " -- " + curRat.getCategory());
 
-				  removeRat.handle(event);
+				  if(curRat.getId() == null)
+				  {
+					  System.out.println("ERR, ratId is null");
+					  sfx.playSound("err");
+				  }
+				  else
+				  {
+					  File temp = new File(curRat.getFilePath());
+					  
+					  File rat = new File("Quarantine\\" + temp.getName());
+					  System.out.println(rat.getAbsolutePath() + rat.exists());
+					  if(rat.renameTo(new File(curRat.getFilePath())))
+					  {
+						  sfx.playSound("meow+1");
+						  StatusInfo.removeRat(curRat.getId());
+					  }
+					  else
+					  {
+						  sfx.playSound("err");
+					  }
+				  }
+				  StatusInfo.refresh();
+
 				  event.consume();
 			  }
-		  }));
+		  });
 		  
 		  EventHandler<Event> toStatusScreen = new EventHandler<Event>() 
 		  {
@@ -2664,6 +3096,8 @@ public class Main extends Application
 				  stage.setScene(statusScene);
 				  Menu.changeScene(rootST, addToAll);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
+
 				  refreshStatus.handle(event);
 				  
 				  event.consume();
@@ -2675,10 +3109,18 @@ public class Main extends Application
 		  delAllBtn.addAction(refreshStatus);
 		  
 		  sc.addScene(statusScene, toStatusScreen);
-		 
+		  userQuar.getButtonX().addAction(toStatusScreen);
 		  
-		  nextBtn.addAction(toStatusScreen);
-		  
+		  //nextBtn.addAction(toStatusScreen);
+		  nextBtn.addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  sfx.playSound("meow");
+				  toMenuScreen.handle(event);
+			  }
+		  });
 
 		  //~~~~~~~~~~~~~~~~~~~~~~ UPDATE ~~~~~~~~~~~~~~~~~~~~~
 		  updateScene.setFill(curPalette.getBgColor());
@@ -2752,17 +3194,43 @@ public class Main extends Application
 		  backHSTxt.setFill(curPalette.getLineColor());
 		  ButtonX backHSBtn = new ButtonX(backHSBox, curPalette.getAcc4Color(), backHSTxt, buttonFlashes);
 		  backHSBtn.addToGroup(rootHS);
-		  backHSBtn.addAction(toMenuScreen); 
+		  //backHSBtn.addAction(toMenuScreen); 
+		  backHSBtn.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  toMenuScreen.handle(event);
+				  sfx.playSound("meow");
+				  
+				  event.consume();
+			  }
+		  }));
 		  
-		  ArrayList<File> scanLogs = new ArrayList<File>();
+		  ArrayList<String> histCat = new ArrayList<String>(Arrays.asList("Date", "Files Scanned", "Unknown Files", "Rats Found", "Low", "Medium", "High")) ;
+		  Menu histTitles = new Menu();
+		  //make titles
+		  for(int i = 0; i < 4; i++)
+		  {
+			  Text title = new Text(histCat.get(i));
+			  title.setX(i*sceneHeight/3 + backHSBtn.getX() + buffer2 + backHSBtn.getWidth());
+			  title.setY(topBarrier + buffer2 + titleSize);
+			  title.setFont(curPalette.getTitleFont());
+			  title.setFill(curPalette.getAcc3Color());
+			  rootHS.getChildren().add(title);
+			  
+			  histTitles.add(title);
+		  }
+		  //Text dateTitle = new Text("
 		  
+		  ArrayList<Menu> histList = new ArrayList<Menu>();
 		  EventHandler<Event> refreshHist = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
 			  { 
 				  File[] files = (new File("ScanLogs")).listFiles();
-				  scanLogs.clear();
+				  final int N = files.length-1;			
 				  
 				  if(files.length == 0) //empty
 				  {
@@ -2772,9 +3240,148 @@ public class Main extends Application
 				  {
 					  int i = files.length-1;
 					  
-					  while(i >= 0 && i > files.length-5)
+					  if(!histList.isEmpty())
 					  {
+						  histList.get(0).removeFromGroup(rootHS);
+						  histList.clear();
+					  }
+					  
+					  Menu histEntry = new Menu();
+					  while(i >= 0 && i >= files.length-6)
+					  {
+						  int yPos = (int)((Text)(histTitles.getComponents()).get(0)).getY() + (titleSize+buffer2)*(N-i+1);
 						  
+						  FileX curFile = new FileX(files[i].getAbsolutePath()); 
+						  try
+						  {
+							curFile.parse();
+						  } catch (FileNotFoundException e)
+						  {
+							e.printStackTrace();
+						  }						  
+						  
+						  String date = new String();
+						  //Date
+						  try
+						  {
+							  date = (curFile.readLine(1).split(": "))[1];
+						  }
+						  catch (ArrayIndexOutOfBoundsException e)
+						  {
+							  System.out.println("ERR READING: " + curFile.readLine(1));
+							  i--;
+							  continue;
+						  }
+						  date = displayTime(date);
+						  
+						  Text dateTxt = new Text();
+						  dateTxt.setX( ((Text)histTitles.getComponents().get(0)).getX());
+						  dateTxt.setY(yPos);
+						  dateTxt.setFont(curPalette.getDefaultFont());
+						  
+						  if(curFile.readLine(3).contains("TRUE"))
+						  {
+							  dateTxt.setFill(curPalette.getLineColor());
+						  }
+						  else
+						  {
+							  dateTxt.setFill(curPalette.getAcc4Color());
+						  }				
+						  
+						  dateTxt.setText(date);
+						  histEntry.add(dateTxt);
+						  
+						  String total = curFile.readLine(5).split(": ")[1] + " Files";
+						  Text totalTxt = new Text(total);
+						  totalTxt.setX( ((Text)histTitles.getComponents().get(1)).getX());
+						  totalTxt.setY(yPos);
+						  totalTxt.setFont(curPalette.getDefaultFont());
+						  totalTxt.setFill(curPalette.getLineColor());
+						  histEntry.add(totalTxt);
+						  
+						  String unk = curFile.readLine(6).split(": ")[1] + " Files";
+						  Text unkTxt = new Text(unk);
+						  unkTxt.setX( ((Text)histTitles.getComponents().get(2)).getX());
+						  unkTxt.setY(yPos);
+						  unkTxt.setFont(curPalette.getDefaultFont());
+						  if(unk.startsWith("0"))
+							  unkTxt.setFill(curPalette.getLineColor());
+						  else
+							  unkTxt.setFill(curPalette.getAcc4Color());
+						  histEntry.add(unkTxt);
+
+						  String rat = curFile.readLine(7).split(": ")[1] + " Rats";
+						  Text ratTxt = new Text(rat);
+						  ratTxt.setX( ((Text)histTitles.getComponents().get(3)).getX());
+						  ratTxt.setY(yPos);
+						  ratTxt.setFont(curPalette.getDefaultFont());
+						  if(rat.startsWith("0"))
+							  ratTxt.setFill(curPalette.getPriColor());
+						  else
+							  ratTxt.setFill(curPalette.getRed());
+						  histEntry.add(ratTxt);
+
+						  Rectangle box = Menu.icon(5*iconSize/8, 5*iconSize/8, 7*sceneWidth/8, yPos - titleSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
+						  Rectangle icon = Menu.icon((int)(5*iconSize/8*0.8), (int)(5*iconSize/8*0.8), box, curPath + "updatesIcon.PNG");
+						  histEntry.add(box);
+						  histEntry.add(icon);
+						  
+						  ButtonX btnX = new ButtonX(box, curPalette.getAcc4Color(), buttonFlashes);
+						  btnX.addToArrays(histEntry.getComponents(), histEntry.getButtons());
+						  
+						  btnX.addAction(new EventHandler<Event>()
+						  {
+							  @Override  
+							  public void handle(Event event) 
+							  {
+								  sfx.playSound("meow");
+						  
+								  File newFile = null;
+								  FileChooser fileSelect = new FileChooser();  
+								  //DirectoryChooser fileSelect = new DirectoryChooser();  
+
+								  fileSelect.setTitle("Saving " + curFile.getName());
+								  fileSelect.getExtensionFilters().addAll(new ExtensionFilter("txt", "*"));
+								  fileSelect.setInitialFileName(curFile.getFile().getName());
+								  
+								  newFile = fileSelect.showSaveDialog(stage);
+								  
+								  if(newFile == null)
+								  {
+									  sfx.playSound("meow-1");
+								  }
+								  else
+								  {
+									  try{
+										newFile.createNewFile();
+									} catch (IOException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+									  FileX newFileX = new FileX(newFile.getAbsolutePath());
+									  try
+									  {
+										newFileX.copy(curFile.getFile());
+										sfx.playSound("meow");
+										
+										newFileX.writeFile();
+
+									  }
+									  catch (FileNotFoundException e)
+									  {
+										  sfx.playSound("err");
+									  }
+									  
+								  }
+								  
+								  event.consume();
+							  }
+						  });
+						  
+						  histEntry.addToGroup(rootHS);
+						  histList.add(histEntry);
+						  
+						  i--;
 					  }
 				  }
 				  
@@ -2782,25 +3389,31 @@ public class Main extends Application
 			  }
 		  };
 		  
+		  
+		  
 		  EventHandler<Event> toHistoryScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
 			  {  
 				  
-				  /*stage.setScene(historyScene);
+				  stage.setScene(historyScene);
 				  Menu.changeScene(rootHS, addToAll);
-				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);*/
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
 				  
-				  unimplementedErr.addToGroup(rootMM);
+				  sfx.playSound("meow");
+				  refreshHist.handle(event);
+
+				  /*unimplementedErr.addToGroup(rootMM);
 				  unimplementedErr.getAnimation().handle(event);
-				  sfx.playSound("err");
+				  sfx.playSound("err");*/
 				  
 				  event.consume();
 		      }    
 		  };  
 		  sc.addScene(historyScene, toHistoryScreen);
-		  bottomButtons.get(1).addAction(toUpdateScreen);
+		  bottomButtons.get(1).addAction(toHistoryScreen);
 		  
 		  EventHandler<Event> toDevicesScene = new EventHandler<Event>() 
 		  {
@@ -2815,7 +3428,7 @@ public class Main extends Application
 				  event.consume();
 		      }    
 		  };  
-		  bottomButtons.get(3).addAction(toDevicesScene);
+		  //bottomButtons.get(3).addAction(toDevicesScene);
 		  
 		  /*unimplementedErr.addToGroup(rootMM);
 		  unimplementedErr.getAnimation().handle(event);
@@ -2827,8 +3440,8 @@ public class Main extends Application
 		Button backABBtn = Menu.makeButton(backUPBox, curPalette.getAcc4Color(), buttonFlashes);		
 		rootAB.getChildren().add(backABBtn);
 		
-		aboutFill.setFromValue((curPalette.getAcc2Color()));
-		aboutFill.setToValue(curPalette.getLineColor());
+		//aboutFill.setFromValue((curPalette.getAcc2Color()));
+		/*aboutFill.setToValue(curPalette.getLineColor());
 		
 	    EventHandler<Event> toAboutScreen = new EventHandler<Event>()
 		{  
@@ -2847,6 +3460,8 @@ public class Main extends Application
 				Menu.changeScene(rootAB, addToAll);
 				
 				curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				iconBox.setVisible(true);
+
 				if(!rootAB.getChildren().contains(backUPBox))
 				{
 					rootAB.getChildren().add(backUPBox);
@@ -2867,29 +3482,17 @@ public class Main extends Application
 				backABBtn.setOnMouseClicked(sc.toScene(oldScene));
 				arg0.consume();
             }  
-	    };  
-	    
-		ButtonX aboutBtnX = new ButtonX(aboutBtn);
-		
-		aboutBtnX.addAction(new EventHandler<Event>() //kill scan
-				  {
-			    public void handle(Event event)
-			    {
-			    	getHostServices().showDocument("https://rattrapav.neocities.org");
-			    }
-		  });		aboutBtnX.addToGroup(rootMM);
-	    
-		sc.addScene(aboutScene, toAboutScreen);  
+	    };  */
 	    
 		
-		Text aboutTitle = new Text("About Us:");
+		/*Text aboutTitle = new Text("About Us:");
 		aboutTitle.setFont(curPalette.getTitle2Font());
 		aboutTitle.setFill(curPalette.getAcc3Color());
 		aboutTitle.setX(buffer2);
 		aboutTitle.setY(topBarrier + buffer2*2);
 		rootAB.getChildren().add(aboutTitle);
 		  
-		Text aboutBody = new Text(sampleText);
+		//Text aboutBody = new Text(sampleText);
 		aboutBody.setFont(curPalette.getDefaultFont());
 		aboutBody.setWrappingWidth(sceneWidth - buffer2*2);
 		aboutBody.setX(buffer2);
@@ -2897,7 +3500,7 @@ public class Main extends Application
 		aboutBody.setFill(curPalette.getLineColor());
 		rootAB.getChildren().add(aboutBody);
 
-		
+		*/
 		//~~~~~~~~~~~~~~~~~~~~~~ Notifications ~~~~~~~~~~~~~~~~~~~~~
 		/*EventHandler<Event> toNotifScreen = new EventHandler<Event>() 
 		  {
@@ -2923,7 +3526,18 @@ public class Main extends Application
 		  backLOTxt.setFill(curPalette.getLineColor());
 		  ButtonX backLOBtn = new ButtonX(backLOBox, curPalette.getAcc4Color(), backLOTxt, buttonFlashes);
 		  backLOBtn.addToGroup(rootLO);
-		  backLOBtn.addAction(toMenuScreen); 
+		  //backLOBtn.addAction(toMenuScreen); 
+		  backLOBtn.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  toMenuScreen.handle(event);
+				  sfx.playSound("meow");
+				  
+				  event.consume();
+			  }
+		  }));
 		  
 		  //ScrollMenu
 		  //								w			h											comp width						comp height				 x  	y	  columns
@@ -2942,6 +3556,7 @@ public class Main extends Application
 		  sm.addComponent(lightSelect);
 		  themeNames.add(lightTheme.getName());
 		  themes.add(lightTheme);
+		  lightSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 		  
 		  //									bg				pri					sec					acc1		acc2					acc3				acc4		outline
 		  Palette lightHCTheme = new Palette(Color.WHITE, Color.MEDIUMSEAGREEN, Color.DEEPSKYBLUE, Color.PLUM, Color.LAVENDERBLUSH, Color.MIDNIGHTBLUE.darker(), Color.PURPLE, Color.BLACK, true);
@@ -2954,7 +3569,8 @@ public class Main extends Application
 		  sm.addComponent(lightHCSelect);
 		  themeNames.add(lightHCTheme.getName());
 		  themes.add(lightHCTheme);
-		  
+		  lightHCSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
+
 		  //								bg				pri			sec				acc1		acc2			acc3		acc4			outline
 		  Palette darkTheme = new Palette(balticSeaGray, pineGreen, shamrockGreen, ravenPurple, wisteriaPurple, dragonGreen, lilacPurple, ceramicWhite, false);
 		  darkTheme.setFonts("Maiandra GD", titleSize, "Segoe UI", (int)(titleSize*0.75));	  
@@ -2964,8 +3580,9 @@ public class Main extends Application
 		  darkSelect.getButton().setOnMouseClicked(event -> curPalette.changePalette(darkTheme, sc.toArray(), buttonFlashes, exclude));
 		  sm.addComponent(darkSelect);
 		  themeNames.add(darkTheme.getName());
-		  themes.add(lightTheme);
-		  
+		  themes.add(darkTheme);
+		  darkSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
+
 		  //										bg				pri			sec				acc1		acc2			acc3		acc4			outline
 		  Palette darkHCTheme = new Palette(Color.BLACK, Color.SEAGREEN, Color.LIGHTGREEN, Color.PURPLE, Color.VIOLET, Color.SKYBLUE.brighter(), Color.LAVENDERBLUSH, Color.WHITE, false);
 		  darkHCTheme.setRed(wineRed);
@@ -2977,6 +3594,7 @@ public class Main extends Application
 		  sm.addComponent(darkHCSelect);
 		  themeNames.add(darkHCTheme.getName());
 		  themes.add(darkHCTheme);
+		  darkHCSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 
 		  
 		  //									bg				pri			sec				acc1		acc2				acc3					acc4			outline
@@ -2989,6 +3607,7 @@ public class Main extends Application
 		  sm.addComponent(lavanderSelect);
 		  themeNames.add(lavanderTheme.getName());
 		  themes.add(lavanderTheme);
+		  lavanderSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 
 		  //									bg					pri							sec				acc1				acc2				acc3					acc4			outline
 		  Palette cherryTheme = new Palette(Color.web("f5ecef"), Color.web("fe9fb5"), Color.web("e8697a"), daisyYellow, honeysuckleYellow, Color.web("b91230"), sycamoreYellow, Color.web("442415") ,true);
@@ -3001,6 +3620,7 @@ public class Main extends Application
 		  sm.addComponent(cherrySelect);
 		  themeNames.add(cherryTheme.getName());
 		  themes.add(cherryTheme);
+		  cherrySelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 
 		  //									bg					pri							sec				acc1				acc2				acc3					acc4			outline
 		  Palette draculaTheme = new Palette(Color.web("282a37"), Color.web("44465b"), Color.web("86e9ff"), Color.web("bc91fc"), Color.web("ff71c6"), Color.web("f1fc84"), Color.web("6171a5"), Color.web("f5f7f9") ,false);
@@ -3014,6 +3634,7 @@ public class Main extends Application
 		  sm.addComponent(draculaSelect);
 		  themeNames.add(draculaTheme.getName());
 		  themes.add(draculaTheme);
+		  draculaSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 
 		  //										bg					pri							sec				acc1				acc2				acc3					acc4			outline
 		  Palette nordicTheme = new Palette(Color.web("ECEFF4"), Color.web("D8DEE9"), Color.web("8FBCBB"), Color.web("81A1C1"), Color.web("88C0D0"), Color.web("4C566A"), Color.web("5E81AC"), Color.web("2E3440"), true);
@@ -3027,6 +3648,7 @@ public class Main extends Application
 		  sm.addComponent(nordicSelect);
 		  themeNames.add(nordicTheme.getName());
 		  themes.add(nordicTheme);
+		  nordicSelect.getButton().setOnAction((event) -> sfx.playSound("meow"));
 
 		  sm.addToGroup(rootLO);  
 		  
@@ -3037,18 +3659,31 @@ public class Main extends Application
 	            {
 					PrefReader.updatePref("Theme", curPalette.getName());
 	            }
-			});		 
+			});	
+		  
+		  homeBtn.addAction(new EventHandler<Event>()
+			{
+				@Override
+				public void handle(Event arg0)
+	            {
+					PrefReader.updatePref("Theme", curPalette.getName());
+	            }
+			});	
 		  
 		  EventHandler<Event> toLayoutScreen = new EventHandler<Event>() 
 		  {
 			  @Override  
 		      public void handle(Event event) 
 			  {  
+				  sfx.playSound("meow");
+				  
 				  sm.reset();
 				  stage.setScene(layoutScene);
 				  rootLO.requestFocus();
 				  Menu.changeScene(rootLO, addToAll);
 				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
+
 				  scanDropdown.toFront();
 				  scanDropdownBtn.toFront();
 				  event.consume();
@@ -3071,7 +3706,20 @@ public class Main extends Application
 			  {
 				  for(int i = 0; i < animMenus.size(); i++)
 				  {
-					  animMenus.get(i).toggleAnimations();
+					  animMenus.get(i).toggleAnimations();					  					  
+				  }
+				  if(animTog.getValue())
+				  {
+					  sfx.playSound("slide");
+					  PrefReader.updatePref("Animations", "TRUE");
+					  
+					  curPalette.changeImg(loadSpin, curPath + "3dScot.PNG", true);
+				  }
+				  else
+				  {
+					  sfx.playSound("slide2");
+					  PrefReader.updatePref("Animations", "FALSE");
+					  curPalette.changeImg(loadSpin, curPath + "3dScotSpin.gif", true);
 				  }
 			  }
 			});
@@ -3082,6 +3730,37 @@ public class Main extends Application
 		  Menu.centerText(icon2Width/2, sceneWidth/4, (int)(animTog.getBg().getY()-buffer/2), animTogLabel);
 		  rootLO.getChildren().add(animTogLabel);
   	
+		  //sound
+		  Toggle soundTog= new Toggle(icon2Width/2, iconSize, sceneWidth/2, sceneHeight-buffer2-iconSize);
+		  soundTog.setColors(curPalette.getBgColor(), curPalette.getSecColor(), curPalette.getBgColor(), curPalette.getLineColor());
+		  soundTog.setText("Off", "On", curPalette.getDefaultFont());
+		  soundTog.addToGroup(rootLO);
+		  soundTog.addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+		      public void handle(Event event) 
+			  {
+				  if(soundTog.getValue())
+				  {
+					  PrefReader.updatePref("Audio", "TRUE");
+					  sfx.setMute(false);
+					  sfx.playSound("slide");
+				  }
+				  else
+				  {
+					  PrefReader.updatePref("Audio", "FALSE");
+					  sfx.setMute(true);
+				  }
+			  }
+		  });
+		  
+		  Text soundTogLabel = new Text("Sound Effects");
+		  soundTogLabel.setFont(curPalette.getSubTitleFont());
+		  soundTogLabel.setFill(curPalette.getLineColor());
+		  Menu.centerText(icon2Width/2, sceneWidth/2, (int)(soundTog.getBg().getY()-buffer/2), soundTogLabel);
+		  rootLO.getChildren().add(soundTogLabel);
+  	
+		  
 		  //Preferences
 		  PrefReader.parse();
 		  
@@ -3105,6 +3784,16 @@ public class Main extends Application
 			  animTog.getBg().setFill(curPalette.getSecColor());
 		  }
 		  
+		  if((Boolean)(PrefReader.getPref("Audio")) == false)
+		  {
+			  sfx.setMute(true);
+			 
+		  }
+		  else
+		  {
+			  soundTog.move();
+			  soundTog.getBg().setFill(curPalette.getSecColor());
+		  }
 		  
 		  //Rectangle mark = Menu.icon(icon2Height*2, icon2Height*2, 0, 0, curPath + "markiplier.jpg");
 		  //rootMM.getChildren().add(mark);		  
@@ -3129,6 +3818,15 @@ public class Main extends Application
 					e.printStackTrace();
 	  			  }
 		          
+	  			  sfx.playSound("exit");
+	  			  
+	    	 		try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	  			  
 	  			  Platform.exit();
 	  			  System.exit(0);
 
@@ -3331,6 +4029,80 @@ public class Main extends Application
 		  errComp.add(errBody);
 		  
 		  PopUp pp = new PopUp(btnX, 100, errComp, errBtns);
+		  
+		  btnX.addAction((new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  //whiteBtn.getActions().get(1).handle(event);
+				  pp.setVisible(false);
+				  
+				  for(Shape shape : pp.getComponents())
+				  {
+					  if(shape.isVisible())
+						  shape.setVisible(false);
+				  }
+				  
+
+				  event.consume();
+			  }
+		  }));
+		  
+		  return pp;
+  	}
+  	
+  	private PopUp infoMessage(String title, String body, int[] nums, Palette curPalette, ArrayList<FillTransition> buttonFlashes)
+  	{
+  		int sceneWidth = nums[0];
+  		int sceneHeight = nums[1];
+  		int btnWidth = nums[2];
+  		
+  		//info POPUP
+		  ArrayList<Shape> infoComp = new ArrayList<Shape>();
+		  ArrayList<Control> infoBtns = new ArrayList<Control>();
+
+		  Rectangle blockScreen = Menu.icon(sceneWidth, sceneHeight, 0, 0, 0, curPalette.getLineColor(), curPalette.getLineColor());
+		  blockScreen.setOpacity(0.5);
+		  infoComp.add(blockScreen);
+		  
+		  Rectangle infoBg = Menu.icon(sceneWidth/2, sceneHeight/2, sceneWidth/4, sceneHeight/4, 10, curPalette.getBgColor(), curPalette.getLineColor());
+		  infoComp.add(infoBg);
+		  
+		  Rectangle infoTop = Menu.icon(sceneWidth/2, sceneHeight/8, sceneWidth/4, sceneHeight/4, 10, curPalette.getPriColor(), curPalette.getLineColor());
+		  infoComp.add(infoTop);
+		  
+		  Rectangle infoIcon = Menu.icon((int)(infoTop.getHeight()*0.5), (int)(infoTop.getHeight()*0.5), sceneWidth/4 + (int)(infoTop.getHeight()*0.5), sceneHeight/4 + (int)(infoTop.getHeight()*0.25),  "file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/" + "statusOkSmall.PNG");
+		  infoComp.add(infoIcon);
+		  
+		  
+		  Rectangle rect = Menu.icon(btnWidth, btnWidth/2, (int)(infoBg.getX() + (infoBg.getWidth() - btnWidth)/2), (int)(3*infoBg.getHeight()/4 + infoBg.getY()), 10, curPalette.getBgColor(), curPalette.getLineColor());
+		  Text txt = new Text("O.K.");
+		  txt.setFont(curPalette.getSubTitleFont());
+		  txt.setFill(curPalette.getLineColor());
+		  
+		  //Set variables
+		  
+		  ButtonX btnX = new ButtonX(rect, curPalette.getSecColor(), txt, buttonFlashes);
+			  
+			  infoComp.add(rect);
+			  infoComp.add(txt);
+			  infoBtns.add(btnX.getButton());
+		  
+		  
+		  Text infoTitle = new Text(title);
+		  infoTitle.setFont(curPalette.getTitleFont());
+		  infoTitle.setFill(curPalette.getLineColor());
+		  Menu.centerText(infoTop, infoTitle);
+		  infoComp.add(infoTitle);
+		  
+		  Text infoBody = new Text(body);
+		  infoBody.setFont(curPalette.getDefaultFont());
+		  infoBody.setFill(curPalette.getLineColor());
+		  Menu.centerText((int)(infoBg.getWidth()*0.9), (int)(infoBg.getX() + infoBg.getWidth()*0.05), (int)(infoTop.getY() + infoTop.getHeight() + curPalette.getTitleFont().getSize()), infoBody);
+		  infoComp.add(infoBody);
+		  
+		  PopUp pp = new PopUp(btnX, 100, infoComp, infoBtns);
 		  
 		  btnX.addAction((new EventHandler<Event>()
 		  {

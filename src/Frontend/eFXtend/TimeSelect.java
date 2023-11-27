@@ -313,7 +313,7 @@ public class TimeSelect extends Menu
 	 */
 	public int getMin()
 	{
-		return hr;
+		return min;
 	}
 	
 	/**

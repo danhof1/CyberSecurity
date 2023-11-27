@@ -76,7 +76,7 @@ public class StatusInfo
 	
 	private static ArrayList<Rat> rats = new ArrayList<Rat>(); //array containing rat info
 	//private static File logs = new File("ScanLogs"); //ScanLogs folder
-	private static FileX info = new FileX("Resources/StatusInfo.txt"); //file containing info
+	private static FileX info = new FileX(System.getProperty("user.dir") + "/Resources/StatusInfo.txt"); //file containing info
 	
 	public static void addRat(String str) //string separated by \t
 	{

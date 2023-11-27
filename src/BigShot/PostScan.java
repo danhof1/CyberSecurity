@@ -9,7 +9,7 @@ public class PostScan
 	
 	public PostScan()
 	{
-		quar = new File("Quarantine");
+		quar = new File(System.getProperty("user.dir") + "\\Quarantine");
 	}
 	
 	/**
@@ -20,7 +20,7 @@ public class PostScan
 	 */
     public boolean deleteOne(String path) throws IOException, InterruptedException
     {
-    	File rat = new File("Quarantine\\" + path.substring(path.lastIndexOf('\\')));
+    	File rat = new File(System.getProperty("user.dir") + "\\Quarantine\\" + path.substring(path.lastIndexOf('\\')));
     	
     	System.out.println("Deleting " + rat.getAbsolutePath());
     	return rat.delete();

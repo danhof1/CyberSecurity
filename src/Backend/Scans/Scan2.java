@@ -147,7 +147,7 @@ public class Scan2 extends Task
         //Write log
         if(!cancelled)
         {
-            updateMessage("Scan Completed");
+       		updateMessage("Scan Completed");
         	int[] stats = {count, unknown, rats, ratInfo[0], ratInfo[1], ratInfo[2]};
         	log.writeLog(true, stats);
         }
@@ -164,6 +164,9 @@ public class Scan2 extends Task
     	ScanManager.startScan();
     	System.out.println("Calling Scan");
     	//Gets total size
+    	
+    	updateMessage("We're setting up your scan! This may take a few moments.");
+    	
 		for(int i = 0; i < N; i++)
 		{
 			total += CountFiles.dirCount(new File(filePaths.get(i)));

@@ -21,7 +21,13 @@ public class freshClam extends Task
             while ((line = reader.readLine()) != null) 
             {
                 System.out.println("Fresh: " + line);
-                updateMessage(line);
+                
+                if(multiLine.isBlank())
+                	multiLine = line;
+                else
+                	multiLine += "\n" + line;
+                                
+                updateMessage(multiLine);
                
             }
             

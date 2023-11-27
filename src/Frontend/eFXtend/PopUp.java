@@ -140,5 +140,60 @@ public class PopUp extends AnimatedMenu
 	{
 		return animation;
 	}
+	
+	public void open()
+	{
+		if(animationsOn)
+    	{
+        	for(int j = 0; j < animations.size(); j++)
+        	{	            		
+        		FadeTransition fade = (FadeTransition)animations.get(j);
+        		fade.play();
+        		
+        		double temp = fade.getFromValue();
+        		fade.setFromValue(fade.getToValue());
+        		fade.setToValue(temp);
+        	}
+        	
+        	for(int k = 0; k < components.size(); k++)
+        	{
+        		components.get(k).setVisible(true);
+        		components.get(k).toFront();
+        	}
+        	
+    	} //end animations on
+    	else //animations off
+    	{
+    		for(int j = 0; j < components.size(); j++)
+    		{
+    			Shape shape = components.get(j);
+    			double maxOpacity = maxOpacities[j];
+    			
+    			if(shape.getOpacity() > 0)
+    			{
+    				shape.setVisible(false);
+    				shape.setOpacity(0);
+    			}
+    			
+    			else
+    			{
+    				shape.setVisible(true);
+    				shape.setOpacity(maxOpacity);
+    				shape.toFront();
+    			}
+    		}
+    	} //end animations off
+    	
+    	if(buttons != null)
+	    {
+	    	for(int k = 0; k < buttons.size(); k++)
+	    	{
+	    		Control btn = buttons.get(k);
+	    		btn.setVisible(!(buttons.get(k)).isVisible());
+	    		btn.toFront();
+	    	}
+	    }
+    	
+	}
 }
 	

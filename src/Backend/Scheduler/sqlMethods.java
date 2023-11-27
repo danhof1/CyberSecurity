@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class sqlMethods
 {
 	//String jdbcURL = "jdbc:sqlite:C:\\Users\\Daniel\\eclipse-workspace\\Rat_Trap\\src\\Backend\\Databases\\sqlite\\ratTrap.db"; 
-	public String jdbcURL = "jdbc:sqlite:" + System.getProperty("user.dir").replace("\\", "/") + "/src/Backend/Databases/sqlite/ratTrap.db";
+	public String jdbcURL = "jdbc:sqlite:" + System.getProperty("user.dir").replace("\\", "/") + "/Databases/sqlite/ratTrap.db";
 	//String jdbcURL = new String("C:\\Users\\Ashley\\RatTrap\\RatTrap 1.5\\src\\Backend\\Databases\\sqlite");
 	
 	public void add(int id, String Recurrence, String Date_time, String Activity,String filePath,String dayOfWeek) {

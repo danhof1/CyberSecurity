@@ -44,6 +44,13 @@ public class clamstart extends Task
               //Startup
               if (!firstLineReceived)
               {
+            	  	//not in admin mode
+            	  	if(line.startsWith("ERROR"))
+            	  	{
+            	  		updateValue("ERROR");
+            	  		break;
+            	  	}
+            	  		
                     // Send a readiness signal as soon as the first line is received
                     System.out.println("Sending readiness signal...");
                     updateValue("All ready!");
@@ -59,7 +66,7 @@ public class clamstart extends Task
               if(line.contains("C:"))
     		  {
             	  //TEMP RAT TESTER
-            	 if(line.contains("evilRat.txt"))
+            	 /*if(line.contains("evilRat.txt"))
             	  {	
             		  System.out.println("SEVERITY TEST:");
             		  line = line.replace("OK", "T3st.Malware.Agent-123 FOUND");
@@ -68,7 +75,7 @@ public class clamstart extends Task
             		  
             		  File f = new File(line.substring( line.indexOf('C'), line.lastIndexOf(':') ));
             		  f.renameTo(new File("Quarantine/" + f.getName()));
-            	  }
+            	  }*/
             	  
             	  	count++;
             	  	Severity sev = StatusCheck.check(line);

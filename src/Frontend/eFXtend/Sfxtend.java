@@ -171,8 +171,7 @@ public class Sfxtend
 		{
 			MediaPlayer player = sounds.get(name);
 			
-			if(player.getVolume() != 0)
-				player.setMute(mute);
+			player.setMute(mute);
 		}
 	}
 	

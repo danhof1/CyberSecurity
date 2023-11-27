@@ -361,7 +361,19 @@ public class Palette
 		
 		if(adjustToTheme && !lightTheme)
 		{
-			imgPath = imgPath.replace(".PNG", "Dark.PNG");
+			if(imgPath.contains(".PNG"))
+					imgPath = imgPath.replace(".PNG", "Dark.PNG");
+			
+			else if(imgPath.contains(".jpg"))				
+				imgPath = imgPath.replace(".jpg", "Dark.jpg");
+			
+			else if(imgPath.contains(".gif"))				
+				imgPath = imgPath.replace(".gif", "Dark.gif");
+
+			/*
+			 * String[] temp = imgPath.split(".");
+			 *	imgPath = temp[0] + "Dark." + temp[1];
+			 */
 		}
 		
 		Image newImg = new Image(imgPath, oldImg.getWidth(), oldImg.getHeight(), false, false);
@@ -520,7 +532,15 @@ public class Palette
 							
 							else //to dark theme
 							{
-								path = path.replace(".PNG", "Dark.PNG");
+								if(path.contains(".PNG"))
+									path = path.replace(".PNG", "Dark.PNG");
+							
+								else if(path.contains(".jpg"))				
+									path = path.replace(".jpg", "Dark.jpg");
+							
+								else if(path.contains(".gif"))				
+									path = path.replace(".gif", "Dark.gif");
+
 							}
 							changeImg((Rectangle)shape, path, false);
 						}
