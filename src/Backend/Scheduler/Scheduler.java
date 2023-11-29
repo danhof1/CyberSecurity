@@ -27,7 +27,7 @@ public class Scheduler extends Task
 		    	String recentFile = mySQL.mostRecentF();
 		    	String dayOfWeek = mySQL.MostRecentDayOfWeek();
 		    	actionMap myKey = new actionMap(); 
-		    	
+		    	int lastInd=mySQL.getLastID();
 		    	//int actionKey = ScanType.valueOf(recentRec);
 		    	//gets recurrance value (days)
 		    	
@@ -41,13 +41,28 @@ public class Scheduler extends Task
 		    	
 		    	//parse current time String --> Time
 		    	LocalDateTime savedDate = LocalDateTime.parse(recentDate);
+		    	
+		    	//Creates the time for the edge-case
+		    	LocalDateTime edgeTime = savedDate.plusMinutes(4).plusSeconds(59);
                 
 		    	//Increment for next recur.
 		    	String newTime = savedDate.plusDays(recKey).toString();
+		    	System.out.println(LocalDateTime.now());
+		    	System.out.println(edgeTime);
+		    	System.out.println(LocalDateTime.now().isAfter(edgeTime));
+		    	if(LocalDateTime.now().isAfter(edgeTime)){
+		    		System.out.println("It is 5+ minutes past scheduled event. The event has been moved or deleted");
+		    		mySQL.rmItem(recentInd);
+		    		if(!recentRec.equals("Once")) {
+			    		mySQL.add(lastInd, newTime, recentAct,recentRec,recentFile,dayOfWeek);
+                	}
+		    	}
 		    	
 		    	//Executes scan
 		    	ExecutorService executorService = Executors.newFixedThreadPool(3); //number of threads?
-		    		
+		    	
+		    	
+		    	
 		    	//If event time matches current time
 		    	if (LocalDateTime.now().isAfter(savedDate))
                 {	
@@ -75,7 +90,7 @@ public class Scheduler extends Task
 			    	//executorService.execute(scan);
 			    	*/
 			    	//remove event --> add next event
-                	int lastInd=mySQL.getLastID();
+                	
                 	mySQL.rmItem(recentInd);
                 	if(!recentRec.equals("Once")) {
                 		mySQL.add(lastInd, newTime, recentAct,recentRec,recentFile,dayOfWeek);

@@ -100,6 +100,9 @@ import javafx.event.EventType;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
+
+import Whitelist.*;
+
 public class Main extends Application 
 { 
   @SuppressWarnings("unchecked")
@@ -190,6 +193,9 @@ public class Main extends Application
 	  Group rootCL = new Group();
 	  Scene calScene = new Scene(rootCL, sceneWidth, sceneHeight);
 	  
+	  Group rootWL = new Group();
+	  Scene whiteScene = new Scene(rootWL, sceneWidth, sceneHeight);
+	  
 	  //Variables > COLORS
 	  /* NOTE: each color has a "proper name"
 	   * and a second name ending in number 1 - 6 based on value
@@ -244,7 +250,6 @@ public class Main extends Application
 	  
 	  String curPath = ("file:" + System.getProperty("user.dir").replace("\\", "/") + "/graphics/");
 	  String statusIconPath = curPath + "statusGoodBig.PNG";
-	  
 	  
 	  ArrayList<AnimatedMenu> animMenus = new ArrayList<AnimatedMenu>();
 	  
@@ -1308,26 +1313,6 @@ public class Main extends Application
 	 
 	  
 	  
-	  EventHandler<Event> folderSkip = new EventHandler<Event>() 
-	  {	  
-		  @Override  
-	      public void handle(Event event) 
-		  {  			
-			  /*DirectoryChooser dir = new DirectoryChooser();  
-		      dir.setTitle("Choose a Folder to Skip When Scanning");
-
-		      File dir1 = dir.showDialog(stage);
-		      System.out.println(dir1.toString()); //TEMP*/
-			  
-			  unimplementedErr.getAnimation().handle(event);
-			  sfx.playSound("err");
-			  
-	          event.consume();
-		  }
-	  };
-	  
-	  //settingsButtons.get(2).setOnMouseClicked(folderSkip);
-	  settingsButtons.get(2).addAction(folderSkip);
 	  
 	  
 	  settingsButtons.get(3).addAction(new EventHandler<Event>() //kill scan
@@ -1774,8 +1759,8 @@ public class Main extends Application
 		          {
 	        		  if(!rat.renameTo(new File("Quarantine/" + rat.getName())))
 	        		  {
-	        			  unimplementedErr.addToGroup(rootMM);
-	        			  unimplementedErr.getAnimation().handle(event);
+	        			  //unimplementedErr.addToGroup(rootMM);
+	        			  //unimplementedErr.getAnimation().handle(event);
 	        			  sfx.playSound("err");
 	        			  break;
 	        		  }
@@ -1837,7 +1822,7 @@ public class Main extends Application
 		  Text loadTxt2 = new Text();
 		  loadTxt2.setFont(curPalette.getSubTextFont());
 		  Menu.centerText((int)(0.9*sceneWidth/2), (int)(0.9*sceneWidth/2), (int)loadTxt.getY() + titleSize, loadTxt2);
-		  loadTxt2.setFill(curPalette.getPriColor());
+		  loadTxt2.setFill(curPalette.getSecColor());
 		  loadTxt2.textProperty().bind(myFresh.messageProperty());
 		  rootLG.getChildren().add(loadTxt2);
 		  
@@ -2107,14 +2092,23 @@ public class Main extends Application
 
 		  
 		  ButtonX cancelBtn = new ButtonX(cancelBox, curPalette.getAcc4Color(), buttonFlashes);
-		  cancelBtn.addAction(toMenuScreen);
 		  cancelBtn.addAction(new EventHandler<Event>() //kill scan
-			  {
+				{
 			    public void handle(Event event)
 			    {
 			    	sfx.playSound("meow-1");
 					ScanManager.killScan();
 					homeBtn.getButton().setVisible(true);
+					
+					try
+					{
+						Thread.sleep(1000);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+					toMenuScreen.handle(event);
 					
 			    	event.consume();
 			    }
@@ -2192,8 +2186,13 @@ public class Main extends Application
 		  Rectangle statusIcon = Menu.icon(iconSize, iconSize, buffer, topBarrier + buffer2, statusIconPath.replace("Big", "Small"));
 		  rootST.getChildren().add(statusIcon);
 		  
+		  PrefReader.parse();
 		  //Will be ratscot gif
-		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "3dScotSpin.gif");
+		  Rectangle ratGif = Menu.icon((int)(sceneHeight/2.5), (int)(sceneHeight/2.5), (sceneWidth - (int)(sceneHeight/2.5))/2, sceneHeight/2 - buffer2, curPath + "ratWheel.gif");
+		  if(!(Boolean)PrefReader.getPref("Animations"))
+			  curPalette.changeImg(ratGif, curPath + "Custard.PNG", true);
+
+		  
 		  rootSC.getChildren().add(ratGif);
 		  
 		  //SCAN FINISHED SCREEN
@@ -2296,7 +2295,7 @@ public class Main extends Application
 		  			  nextBtn.setVisible(Scan2.rats != 0);
 
 		  			  //Get time
-		  			  File temp = new File("ScanLogs");
+		  			  File temp = new File(System.getProperty("user.dir") + "\\ScanLogs");
 		  			  String timeStr = (temp.list()[temp.list().length-1]);
 		  			  timeStr = timeStr.substring(timeStr.indexOf(' ')+1, timeStr.indexOf('.'));
 			  	      timeStr = displayTime(timeStr);
@@ -2355,7 +2354,13 @@ public class Main extends Application
 			    	//Reset values
 			    	
 			    	scanTitle.setText(scanBS.getValue());
-			    	Palette.changeImg(ratGif, curPath + "3dScotSpin.gif");
+			    		
+			    	if(!(Boolean)PrefReader.getPref("Animations"))
+			    		curPalette.changeImg(ratGif, curPath + "Custard.PNG", true);
+			    	else
+				    	curPalette.changeImg(ratGif, curPath + "ratWheel.gif", true);
+
+			    	
 			    	Scan2 scan = null;
 			    	
 			    	if(scanBS.getValue().contains("Quick"))
@@ -2501,8 +2506,13 @@ public class Main extends Application
 	        	  			 
 	        	  			//Reset values
 	     			    	
-	     			    	Palette.changeImg(ratGif, curPath + "3dScotSpin.gif");
-	     			    	Scan2 scan = null;
+	        	  			if(!(Boolean)PrefReader.getPref("Animations"))
+	    			    		curPalette.changeImg(ratGif, curPath + "Custard.PNG", true);
+	    			    	else
+	    				    	curPalette.changeImg(ratGif, curPath + "ratWheel.gif", true);
+
+	    			    	
+	        	  			Scan2 scan = null;
 	     			    	
 	     			    	//chose scan
 	     			    	switch(st)
@@ -2682,6 +2692,7 @@ public class Main extends Application
 				  {
 					  whiteBtn.getActions().get(1).handle(event);
 					  blockScreen.setVisible(false);
+					  
 					  
 					  event.consume();
 				  }
@@ -3187,7 +3198,7 @@ public class Main extends Application
 		  sc.addScene(updateScene, toUpdateScreen);
 		  
 		  //History scene
-		  
+		  historyScene.setFill(curPalette.getBgColor());
 		  Rectangle backHSBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());		 
 		  Text backHSTxt = new Text("Back");
 		  backHSTxt.setFont(curPalette.getTitleFont());
@@ -3222,6 +3233,24 @@ public class Main extends Application
 			  histTitles.add(title);
 		  }
 		  //Text dateTitle = new Text("
+		  Text noHist = new Text("No previous scan logs were found.");
+		  noHist.setFill(curPalette.getLineColor());
+		  noHist.setFont(curPalette.getDefaultFont());
+		  Menu.centerText(sceneWidth, 0, (sceneHeight-topBarrier - 3*titleSize/4)/2 + topBarrier, noHist);
+		  rootHS.getChildren().add(noHist);
+		  noHist.setVisible(false);
+		  
+		  
+		  Rectangle delHistBox = Menu.icon(icon2Width/2, iconSize, sceneWidth - buffer2 - icon2Width/2, sceneHeight-buffer2-iconSize, 10, curPalette.getRed(), curPalette.getLineColor());
+		  rootST.getChildren().add(delHistBox);
+		  
+		  Text delHistTxt = new Text("Clear History");
+		  delHistTxt.setFont(curPalette.getSubTitleFont());
+		  delHistTxt.setWrappingWidth(icon2Width/2);
+		  delHistTxt.setFill(curPalette.getBgColor());
+
+		  ButtonX delHistBtn = new ButtonX(delHistBox, curPalette.getLineColor(), delHistTxt, buttonFlashes);
+		  delHistBtn.addToGroup(rootHS);
 		  
 		  ArrayList<Menu> histList = new ArrayList<Menu>();
 		  EventHandler<Event> refreshHist = new EventHandler<Event>() 
@@ -3234,10 +3263,25 @@ public class Main extends Application
 				  
 				  if(files.length == 0) //empty
 				  {
-					  
+					  System.out.println("no logs");
+					noHist.setVisible(true);
+					//histTitles.setVisible(false);
+					delHistBtn.setVisible(false);
+					
+					if(!histList.isEmpty())
+					{
+						  histList.get(0).removeFromGroup(rootHS);
+						  histList.clear();
+					}
+					
 				  }
 				  else
 				  {
+					  	noHist.setVisible(false);  
+						//histTitles.setVisible(true);
+						delHistBtn.setVisible(true);
+
+					  	
 					  int i = files.length-1;
 					  
 					  if(!histList.isEmpty())
@@ -3316,7 +3360,7 @@ public class Main extends Application
 						  ratTxt.setY(yPos);
 						  ratTxt.setFont(curPalette.getDefaultFont());
 						  if(rat.startsWith("0"))
-							  ratTxt.setFill(curPalette.getPriColor());
+							  ratTxt.setFill(curPalette.getSecColor());
 						  else
 							  ratTxt.setFill(curPalette.getRed());
 						  histEntry.add(ratTxt);
@@ -3383,12 +3427,43 @@ public class Main extends Application
 						  
 						  i--;
 					  }
+					  while(i >= 0)
+					  {
+						  File curFile = files[i]; 
+						  curFile.delete();
+						  i--;
+					  }
+					  
 				  }
 				  
 				  event.consume();
 			  }
 		  };
 		  
+		  
+		  
+		  delHistBtn.addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  sfx.playSound("deleteAll");
+
+				  for(File log : new File(System.getProperty("user.dir") + "\\ScanLogs").listFiles())
+				  {
+					  if(!log.delete())
+					  {
+						  sfx.playSound("err");
+						  break;
+					  }
+				  }
+				  refreshHist.handle(event);
+		  {
+			  
+		  }
+				  
+			  }
+		  });
 		  
 		  
 		  EventHandler<Event> toHistoryScreen = new EventHandler<Event>() 
@@ -3703,7 +3778,7 @@ public class Main extends Application
 			{
 			  @Override  
 		      public void handle(Event event) 
-			  {
+			  {				  
 				  for(int i = 0; i < animMenus.size(); i++)
 				  {
 					  animMenus.get(i).toggleAnimations();					  					  
@@ -3794,6 +3869,304 @@ public class Main extends Application
 			  soundTog.move();
 			  soundTog.getBg().setFill(curPalette.getSecColor());
 		  }
+		  
+		  whiteScene.setFill(curPalette.getBgColor());
+		  
+		  Text whiteTitle = new Text("Whitelisted Files");
+		  whiteTitle.setFont(curPalette.getTitle2Font());
+		  whiteTitle.setFill(curPalette.getAcc4Color());
+		  Menu.centerText(sceneWidth, 0, topBarrier + (int)curPalette.getTitle2Font().getSize(), whiteTitle);
+		  rootWL.getChildren().add(whiteTitle);
+		  
+		  Rectangle backWLBox = Menu.icon(icon2Width/2, iconSize, buffer2, sceneHeight-buffer2-iconSize, 10, curPalette.getAcc1Color(), curPalette.getLineColor());
+		  
+		  Text backWLText = new Text("Back");
+		  backWLText.setFont(curPalette.getTitleFont());
+		  backWLText.setFill(curPalette.getLineColor());
+		  backWLText.setTextAlignment(TextAlignment.CENTER);
+
+		  ButtonX backWLBtn = new ButtonX(backWLBox, curPalette.getAcc4Color(), backWLText, buttonFlashes);
+		  backWLBtn.addToGroup(rootWL);
+		  backWLBtn.addAction(new EventHandler<Event>() //kill scan
+		  {
+		    public void handle(Event event)
+		    {
+		    	sfx.playSound("meow");
+		    	toMenuScreen.handle(event);
+		    }
+		  });		  
+		  
+		  Rectangle wLAdd = Menu.icon(icon2Width/2, iconSize, (int)backWLBtn.getWidth() + buffer2*2, sceneHeight-buffer2-iconSize, 10, curPalette.getSecColor(), curPalette.getLineColor());		  
+		  Text wlAddTxt = new Text("Add");
+		  wlAddTxt.setFont(curPalette.getTitleFont());
+		  wlAddTxt.setFill(curPalette.getBgColor());
+		  ButtonX wLAddBtn = new ButtonX(wLAdd, curPalette.getAcc3Color(), wlAddTxt, buttonFlashes);
+		  wLAddBtn.addToGroup(rootWL);
+		  
+		  Rectangle wLDelAll = Menu.icon(icon2Width/2, iconSize, (int)backWLBtn.getWidth()*2 + buffer2*3, sceneHeight-buffer2-iconSize, 10, curPalette.getRed(), curPalette.getLineColor());		  
+		  Text wlDelAllTxt = new Text("Delete All");
+		  wlDelAllTxt.setFont(curPalette.getTitleFont());
+		  wlDelAllTxt.setFill(curPalette.getBgColor());
+		  ButtonX wLDelAllBtn = new ButtonX(wLDelAll, curPalette.getLineColor(), wlDelAllTxt, buttonFlashes);
+		  wLDelAllBtn.addToGroup(rootWL);
+		  
+		  //whitelist function
+		  WhitelistMethods wm = new WhitelistMethods();
+		  sqlMethodsWhite sqlW = wm.sqlW;
+
+		  //holds all strings in whitelist
+		  ArrayList<String> whitelist = new ArrayList<String>();
+		  ArrayList<Integer> whitelistIds = new ArrayList<Integer>();
+		  
+		  Text[] textArr = new Text[7];
+		  ButtonX[] xArr = new ButtonX[7];		  
+		  
+		  Text noWl = new Text("No files are currently whitelisted.");
+		  noWl.setFill(curPalette.getLineColor());
+		  noWl.setFont(curPalette.getDefaultFont());
+		  Menu.centerText(sceneWidth, 0, (sceneHeight-topBarrier - 3*titleSize/4)/2 + topBarrier, noWl);
+		  rootWL.getChildren().add(noWl);
+		  
+		  EventHandler<Event> refreshWL = new EventHandler<Event>() 
+		  {
+		    public void handle(Event event)
+		    {
+		    	whitelist.clear();
+		    	whitelistIds.clear();
+		    		//parse
+				  if(!sqlW.isEmpty())
+				  {
+					  noWl.setVisible(false);
+					  
+					  int i = 0;
+					  for(String[] strArr : sqlW.toArray())
+					  {
+						  if(i == 7) //eigth element
+						  {
+							  textArr[7].setText(". . .");
+							  xArr[7].setVisible(true);
+						  }
+						  
+						  whitelist.add((strArr[1]));
+						  whitelistIds.add(Integer.parseInt(strArr[0]));
+						  
+						  if(i < 7)
+						  {
+							  textArr[i].setText(strArr[1]);
+							  xArr[i].setVisible(true);
+						  }
+						  
+						  i++;
+					  }
+					  
+					  if(i < 7)
+					  {
+						  for(int j = i; j < 7; j++)
+						  {
+							  xArr[j].setVisible(false);
+							  textArr[j].setText("");
+						  }
+					  }
+					  
+				  }
+				  else
+				  {
+					  noWl.setVisible(true);
+					  
+					  for(int i = 0; i < 7; i++)
+					  {
+						  textArr[i].setText("");
+						  xArr[i].setVisible(false);
+					  }
+				  }
+		    }
+		  };
+		  
+		  for(int i = 0; i < 7; i++)
+		  {
+			  int yPos = (int)(whiteTitle.getY()) + (titleSize+buffer2)*(i+1);
+			  
+			  Text txt = new Text("");
+			  txt.setFont(curPalette.getDefaultFont());
+			  txt.setFill(curPalette.getLineColor());
+			  txt.setX(buffer2);
+			  txt.setY(yPos);
+			  textArr[i] = txt;
+			  
+			  rootWL.getChildren().add(txt);
+			  
+			  Rectangle box = Menu.icon(5*iconSize/8, 5*iconSize/8, 7*sceneWidth/8, yPos - titleSize, 10, curPalette.getRed(), curPalette.getLineColor());
+			  Text boxTxt = new Text("X");
+			  boxTxt.setFill(curPalette.getBgColor());
+			  boxTxt.setFont(curPalette.getTitleFont());
+			  ButtonX btnX = new ButtonX(box, curPalette.getAcc4Color(), boxTxt, buttonFlashes);
+			  btnX.addToGroup(rootWL);
+			  btnX.setVisible(false);
+			  xArr[i] = btnX;
+			  
+			  final int index = i;
+			  btnX.addAction(new EventHandler<Event>() //kill scan
+			  {
+			    public void handle(Event event)
+			    {
+			    	sfx.playSound("delete");
+			    	
+			    	
+			    	System.out.println(index + " " + textArr[index].getText());
+			    	int rmIndex = whitelist.indexOf(textArr[index].getText());
+
+			    	try
+			    	{
+						wm.rmWhitelist(whitelistIds.get(rmIndex));
+					} catch (IOException e)
+			    	{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	
+			    	//whitelist.remove(rmIndex+1);
+			    	//whitelistIds.remove(rmIndex);
+			    	refreshWL.handle(event);
+			    }
+			  });
+			  
+		  }
+		  
+		  confBtnXs.get(1).addAction(new EventHandler<Event>()
+		  {
+			  @Override  
+			  public void handle(Event event) 
+			  {
+				  	System.out.println("Whitelisting: " + curRat.getFilePath()); //TEMP
+					wm.AddToWhitelist(curRat.getFilePath());
+					refreshWL.handle(event);
+			  }
+		  });
+		  
+		  //open warning
+		  PopUp wlInfo = this.infoMessage("Are you sure you want to do this?", "Whitelisting a file can be dangerous since Rat Trap will not be able to scan it for Rats!\nOnly do this if you are absolutely 100% sure of what you're doing.", errNums, curPalette, buttonFlashes);
+		  wlInfo.addToGroup(rootWL);
+		  wLAddBtn.addAction(new EventHandler<Event>() //kill scan
+		  {
+		    public void handle(Event event)
+		    {
+		    	sfx.playSound("meow");
+		    	wlInfo.open();
+		    }
+		  });
+		  
+		  PopUp wlFail = errorMessage("This file is already whitelisted.", errNums, curPalette, buttonFlashes);
+		  wlFail.addToGroup(rootWL);
+
+		  wlFail.getButtonX().addAction(new EventHandler<Event>()
+		  {
+			    public void handle(Event event)
+			    {
+			    	sfx.playSound("meow-1");
+			    }
+		  });
+		  
+		  PopUp wlFail2 = errorMessage("This folder cannot be whitelisted.", errNums, curPalette, buttonFlashes);
+		  wlFail2.getButtonX().addAction(new EventHandler<Event>()
+		  {
+			    public void handle(Event event)
+			    {
+			    	sfx.playSound("meow-1");
+			    }
+		  });
+		  wlFail2.addToGroup(rootWL);
+
+		  //add to whitelist
+		  wlInfo.getButtonX().addAction(new EventHandler<Event>()
+		  {
+		    public void handle(Event event)
+		    {
+		    	sfx.playSound("meow");
+
+		    	DirectoryChooser dirSelect = new DirectoryChooser();  
+		    	dirSelect.setTitle("Choose a Folder to Whitelist");
+
+		    	File dir = dirSelect.showDialog(stage);
+		          
+		    	//no folder selected
+		        if(dir == null)
+		        {
+		        	sfx.playSound("meow-1");
+		        	return;
+		        }
+				else	//folder selected
+				{
+					sfx.playSound("meow");
+				}
+		    	
+		    	//call whitelist methods
+		    	if(wm.containsForbidden(dir.getAbsolutePath())) //contains forbidden --> fail
+		    	{
+		    		sfx.playSound("err");
+		    		wlFail2.open();
+		    		return;
+		    	}
+		    	
+		    	if(whitelist.contains(dir.getAbsolutePath()))
+		    	{
+		    		sfx.playSound("err");
+		    		wlFail.open();
+		    		return;
+		    	}
+		    	
+		    	System.out.println("Whitelisting: " + dir.getAbsolutePath()); //TEMP
+				wm.AddToWhitelist(dir.getAbsolutePath());
+				refreshWL.handle(event);
+		    }
+		  });
+		  
+		  
+		  wLDelAllBtn.addAction(new EventHandler<Event>()
+		  {
+		    public void handle(Event event)
+		    {
+		    	sfx.playSound("deleteAll");
+		    	
+		    	while(!sqlW.isEmpty())
+		    	{
+			    	for(int i = 0; i < whitelist.size(); i++)
+			    	{
+			    		try
+			    		{
+							wm.rmWhitelist(whitelistIds.get(i));
+						} catch (IOException e)
+			    		{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+			    	}
+		    	}
+		    	refreshWL.handle(event);
+		    }
+		  });
+		  
+		  EventHandler<Event> toWhiteScreen = new EventHandler<Event>() 
+		  {
+			  @Override  
+		      public void handle(Event event) 
+			  {  				
+				  sfx.playSound("meow");
+				  
+				  stage.setScene(whiteScene);
+				  Menu.changeScene(rootWL, addToAll);
+				  curPalette.changeImg(headerIcon, curPath + "RatHome.PNG", true);
+				  iconBox.setVisible(true);
+				  refreshWL.handle(event);
+
+				  event.consume();
+		      }    
+		  };  
+		  
+		  sc.addScene(whiteScene, toWhiteScreen);		  
+		  settingsButtons.get(2).addAction(toWhiteScreen);
+		  
+		  
 		  
 		  //Rectangle mark = Menu.icon(icon2Height*2, icon2Height*2, 0, 0, curPath + "markiplier.jpg");
 		  //rootMM.getChildren().add(mark);		  
